@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,6 +25,7 @@ body{
   position:absolute;inset:0;z-index:50;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);
+  pointer-events:all;
 }
 .overlay.hidden{display:none;}
 
@@ -95,7 +95,7 @@ body{
 }
 #homeScreen.hidden{display:none;}
 .game-logo{
-  font-family:'Bangers',cursive;font-size:54px;
+  font-family:'Bangers',cursive;font-size:38px;
   background:linear-gradient(135deg,#FF3366,#FF9900,#FFFF00,#33FF66,#3399FF,#CC33FF);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
   letter-spacing:3px;animation:logoPulse 2s ease-in-out infinite;
@@ -213,7 +213,7 @@ body{
 }
 
 /* ===== GAME OVER ===== */
-#gameoverScreen{background:rgba(0,0,0,0.88);z-index:50;}
+#gameoverScreen{background:rgba(0,0,0,0.88);z-index:50;pointer-events:all;}
 #gameoverScreen.hidden{display:none;}
 .go-title{font-family:'Bangers',cursive;font-size:52px;
   background:linear-gradient(135deg,#FF3366,#FF9900);
@@ -222,19 +222,21 @@ body{
 .go-score{font-family:'Bangers',cursive;font-size:32px;color:var(--primary);margin-bottom:4px;}
 .go-coins{font-size:16px;color:var(--success);margin-bottom:6px;}
 .go-best{font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:24px;}
-.go-btns{display:flex;flex-direction:column;gap:10px;align-items:center;pointer-events:all;}
+.go-btns{display:flex;flex-direction:column;gap:10px;align-items:center;pointer-events:all;width:100%;}
 .btn-restart{
   background:linear-gradient(135deg,#FF3366,#FF9900);
   color:#fff;border:none;border-radius:25px;
   padding:14px 50px;font-family:'Bangers',cursive;
   font-size:22px;letter-spacing:2px;cursor:pointer;
   box-shadow:0 4px 20px rgba(255,51,102,0.4);
+  pointer-events:all;width:220px;
 }
 .btn-wallet{
   background:rgba(255,255,255,0.1);color:#fff;
   border:1px solid rgba(255,255,255,0.2);border-radius:25px;
   padding:12px 40px;font-family:'Nunito',sans-serif;
   font-size:14px;font-weight:700;cursor:pointer;
+  pointer-events:all;width:220px;
 }
 
 /* ===== HUD ===== */
@@ -268,12 +270,12 @@ body{
 }
 #candyBoard{
   display:grid;
-  gap:4px;
-  padding:12px;
-  background:rgba(0,0,0,0.4);
-  border-radius:20px;
-  border:1px solid rgba(255,255,255,0.1);
-  box-shadow:0 8px 40px rgba(255,51,102,0.2);
+  gap:5px;
+  padding:14px;
+  background:rgba(0,0,0,0.5);
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,0.12);
+  box-shadow:0 8px 40px rgba(255,51,102,0.25), inset 0 1px 0 rgba(255,255,255,0.08);
   touch-action:none;
 }
 .candy-cell{
@@ -282,23 +284,23 @@ body{
   display:flex;align-items:center;justify-content:center;
   font-size:24px;
   cursor:pointer;
-  transition:transform 0.12s, box-shadow 0.12s;
+  transition:transform 0.12s, box-shadow 0.12s, filter 0.12s;
   position:relative;
   user-select:none;
-  box-shadow:0 3px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.4);
+  box-shadow:0 3px 10px rgba(0,0,0,0.5), inset 0 2px 0 rgba(255,255,255,0.5);
 }
-.candy-cell:active{transform:scale(0.9);}
+.candy-cell:active{transform:scale(0.88);}
 .candy-cell.selected{
-  transform:scale(1.18);
-  box-shadow:0 0 0 3px #fff, 0 0 20px rgba(255,255,255,0.6), 0 4px 12px rgba(0,0,0,0.5);
-  z-index:5;
+  transform:scale(1.2);
+  box-shadow:0 0 0 3px #fff, 0 0 24px rgba(255,255,255,0.7), 0 4px 14px rgba(0,0,0,0.5);
+  z-index:5;filter:brightness(1.2);
 }
 .candy-cell.hint{animation:hintPulse 0.6s ease-in-out 3;}
-@keyframes hintPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+@keyframes hintPulse{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.18);filter:brightness(1.3)}}
 .candy-cell.matched{animation:matchPop 0.3s ease-out forwards;}
-@keyframes matchPop{0%{transform:scale(1.2);opacity:1}100%{transform:scale(0);opacity:0}}
-.candy-cell.falling{animation:fallIn 0.3s ease-in;}
-@keyframes fallIn{0%{transform:translateY(-50px);opacity:0}100%{transform:translateY(0);opacity:1}}
+@keyframes matchPop{0%{transform:scale(1.3);opacity:1;filter:brightness(1.5)}100%{transform:scale(0);opacity:0;filter:brightness(2)}}
+.candy-cell.falling{animation:fallIn 0.32s cubic-bezier(0.36,0.07,0.19,0.97);}
+@keyframes fallIn{0%{transform:translateY(-60px) scale(0.8);opacity:0}80%{transform:translateY(4px) scale(1.05)}100%{transform:translateY(0) scale(1);opacity:1}}
 .candy-cell.swapping{transition:transform 0.2s ease;}
 
 /* Candy colors */
@@ -560,6 +562,7 @@ body{
   font-size:11px;font-weight:700;cursor:pointer;
   pointer-events:all;z-index:15;letter-spacing:1px;display:none;
 }
+@keyframes movesWarn{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
 </style>
 
 <script src='//libtl.com/sdk.js' data-zone='11069622' data-sdk='show_11069622'></script>
@@ -925,12 +928,14 @@ function getCellEl(r,c){
 async function processMatches(matches){
   animating=true;
   clearTimeout(hintTimeout);
-  // Calculate score
+  // Calculate score with combo bonus
   const pts = calcPoints(matches);
   score += pts; levelScore += pts;
-  totalCoinsThisGame += Math.floor(pts/20);
-  S.coins += Math.floor(pts/20);
-  S.totalCoins += Math.floor(pts/20);
+  // Improved coin earn: 1 coin per 5 pts (was 20), so more rewarding
+  const coinsThisMatch = Math.floor(pts/5);
+  totalCoinsThisGame += coinsThisMatch;
+  S.coins += coinsThisMatch;
+  S.totalCoins += coinsThisMatch;
   // Show score pops
   const centers = getMatchCenters(matches);
   centers.forEach(({x,y,pts:p}) => spawnScorePop(x,y,p));
@@ -964,8 +969,13 @@ async function processMatches(matches){
 }
 
 function calcPoints(matches){
-  const combo = Math.floor(matches.length / 3);
-  return matches.length * 30 * Math.max(1, combo);
+  const len = matches.length;
+  // Tiered scoring: 3=90, 4=160, 5=300, 6+=500+
+  if(len <= 3) return 90;
+  if(len === 4) return 160;
+  if(len === 5) return 300;
+  if(len === 6) return 500;
+  return 500 + (len - 6) * 120; // massive chains
 }
 
 function getMatchCenters(matches){
@@ -993,14 +1003,30 @@ function spawnScorePop(col,row,pts){
   const padding=12;
   const x=rect.left+padding+col*cellSize+cellSize/2;
   const y=rect.top+padding+row*cellSize+cellSize/2;
+  // Score pop
   const pop=document.createElement('div');
   pop.className='score-pop';
   pop.style.left=x+'px'; pop.style.top=y+'px';
-  pop.style.setProperty('--dx',(Math.random()*30-15)+'px');
+  pop.style.setProperty('--dx',(Math.random()*40-20)+'px');
   pop.style.setProperty('--dy','0px');
+  pop.style.color = pts>=300?'#FFD700':pts>=160?'#FF9900':'#fff';
+  pop.style.fontSize = pts>=300?'28px':pts>=160?'24px':'20px';
   pop.textContent='+'+pts;
   document.body.appendChild(pop);
-  setTimeout(()=>pop.remove(),800);
+  setTimeout(()=>pop.remove(),900);
+  // Coin pop for large matches
+  if(pts>=160){
+    const cpop=document.createElement('div');
+    cpop.className='score-pop';
+    cpop.style.left=(x+10)+'px'; cpop.style.top=(y+18)+'px';
+    cpop.style.setProperty('--dx',(Math.random()*30-15)+'px');
+    cpop.style.setProperty('--dy','0px');
+    cpop.style.color='#00FF88';
+    cpop.style.fontSize='14px';
+    cpop.textContent='🍭+'+Math.floor(pts/5);
+    document.body.appendChild(cpop);
+    setTimeout(()=>cpop.remove(),900);
+  }
 }
 
 function createSpecials(matches){
@@ -1147,15 +1173,25 @@ function delay(ms){ return new Promise(r=>setTimeout(r,ms)); }
 // ── HUD update ───────────────────────────────────────────────
 function updateHUD(){
   document.getElementById('scoreEl').textContent = score.toLocaleString();
-  document.getElementById('movesEl').textContent = moves;
+  const movesEl = document.getElementById('movesEl');
+  movesEl.textContent = moves;
+  if(moves<=5){ movesEl.style.color='#FF3366'; movesEl.style.textShadow='0 0 12px rgba(255,51,102,0.8)'; }
+  else if(moves<=10){ movesEl.style.color='#FF9900'; movesEl.style.textShadow='none'; }
+  else { movesEl.style.color='#FF9900'; movesEl.style.textShadow='none'; }
   updateProgressBar();
 }
 function updateProgressBar(){
   const pct = Math.min(100, (levelScore/levelTarget)*100);
   document.getElementById('levelFill').style.width = pct+'%';
-  document.getElementById('levelTarget').textContent = `🎯 Target: ${levelScore.toLocaleString()} / ${levelTarget.toLocaleString()}`;
+  document.getElementById('levelTarget').textContent = `🎯 ${levelScore.toLocaleString()} / ${levelTarget.toLocaleString()}`;
 }
-function updateCoinUI(){ document.getElementById('coinEl').textContent = S.coins.toLocaleString(); }
+function updateCoinUI(){
+  const c = S.coins||0;
+  document.getElementById('coinEl').textContent = c.toLocaleString();
+  // Also update rupee value shown in HUD label
+  const lbl = document.getElementById('coinRupeeEl');
+  if(lbl) lbl.textContent = '₹'+(c/100).toFixed(0);
+}
 
 // ── Game flow ─────────────────────────────────────────────────
 window.startGame = function(){
@@ -1252,11 +1288,13 @@ window.togglePause = function(){
   if(_paused) gameActive=false; else { gameActive=true; }
 };
 window.showHome = function(){
-  gameActive=false; _paused=false;
+  gameActive=false; _paused=false; animating=false;
   document.getElementById('gameScreen').classList.remove('active');
   document.getElementById('homeScreen').classList.remove('hidden');
   document.getElementById('gameoverScreen').classList.add('hidden');
+  document.getElementById('levelCompleteScreen').classList.remove('open');
   document.getElementById('pauseBtn').style.display='none';
+  updateCoinUI();
 };
 window.restartFromPause=function(){ window.startGame(); };
 window.quitToHome=function(){ window.showHome(); };
@@ -1288,7 +1326,7 @@ window.openWallet = function(){
 window.closeWallet = function(){ document.getElementById('walletView').classList.remove('open'); };
 
 function updateWalletUI(){
-  const rupeesVal = ((S.coins||0)/10000).toFixed(2);
+  const rupeesVal = ((S.coins||0)/100).toFixed(2);
   const el = document.getElementById('wv-balance');
   if(el) el.textContent = '₹'+rupeesVal;
   const ce = document.getElementById('wv-coins');
@@ -1298,7 +1336,7 @@ function updateWalletUI(){
 
 window.updateWdPreview = function(){
   const coins = parseInt(document.getElementById('wd-coins').value)||0;
-  document.getElementById('wd-preview').textContent = '₹'+(coins/10000).toFixed(2);
+  document.getElementById('wd-preview').textContent = '₹'+(coins/100).toFixed(2);
 };
 
 window.requestWithdrawal = function(){
@@ -1309,7 +1347,7 @@ window.requestWithdrawal = function(){
   if(coins<5000){ showToast('Minimum 5000 coins!',true); return; }
   if(S.coins<coins){ showToast('Not enough coins!',true); return; }
   if(!acc||!name){ showToast('Fill all fields!',true); return; }
-  const rupees = (coins/10000).toFixed(2);
+  const rupees = (coins/100).toFixed(2);
   pendingWd={coins,method,acc,name,rupees};
   document.getElementById('m-title').textContent='Confirm Withdrawal';
   document.getElementById('m-body').textContent=`Withdraw ${coins.toLocaleString()} 🍭 → ₹${rupees} via ${method.toUpperCase()} to ${acc}?`;
@@ -1683,7 +1721,7 @@ window.addEventListener('resize', ()=>{ if(document.getElementById('gameScreen')
   <div class="game-sub">MATCH 3 · EARN COINS</div>
   <div class="candy-preview">🍓🍊🍋🍏🫐🍇</div>
   <button class="btn-play" onclick="startGame()">▶ PLAY</button>
-  <div class="coin-rate-tag">💰 10,000 🍭 = ₹1.00</div>
+  <div class="coin-rate-tag">💰 5,000 🍭 = ₹50.00</div>
   <div class="home-nav">
     <div class="home-nav-btn" onclick="openWallet()"><div class="ni">💸</div>WALLET</div>
     <div class="home-nav-btn" onclick="openProfile()"><div class="ni">👤</div>PROFILE</div>
@@ -1702,6 +1740,7 @@ window.addEventListener('resize', ()=>{ if(document.getElementById('gameScreen')
       <div class="hud-box" style="text-align:center;">
         <div class="hud-label" id="levelLabel">LEVEL 1</div>
         <div class="hud-coins" style="justify-content:center;" id="coinEl">0</div>
+        <div style="font-size:9px;color:rgba(0,255,136,0.7);font-weight:700;" id="coinRupeeEl">₹0</div>
       </div>
       <div class="hud-box hud-right">
         <div class="hud-label">MOVES</div>
@@ -1763,7 +1802,7 @@ window.addEventListener('resize', ()=>{ if(document.getElementById('gameScreen')
   </div>
   <div class="rate-card">
     <div class="ri">💱</div>
-    <div><div class="rt">Conversion Rate</div><div class="rv">10,000 🍭 = ₹1.00</div></div>
+    <div><div class="rt">Conversion Rate</div><div class="rv">5,000 🍭 = ₹50.00</div></div>
   </div>
   <div class="sec-head">💸 Withdraw</div>
   <div class="wd-card">
