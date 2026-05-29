@@ -1,58 +1,25 @@
+
 <!DOCTYPE html>
 <html lang="en">
-<head> 
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Metro Rush - Earn Money</title>
+<title>Candy Crush - Earn Money</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800;900&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 :root{
-  --primary:#FFD700;--secondary:#FF6B00;--accent:#00E5FF;
+  --primary:#FFD700;--secondary:#FF6B00;--accent:#FF3399;
   --bg:#1a0533;--success:#00FF88;--danger:#FF3366;
-  --track1:#2d1b69;--track2:#1a0f4a;
+  --candy1:#FF3366;--candy2:#FF9900;--candy3:#FFFF00;
+  --candy4:#33FF66;--candy5:#3399FF;--candy6:#CC33FF;
 }
 body{
-  background:#1a0533;color:#fff;
+  background:var(--bg);color:#fff;
   font-family:'Nunito',sans-serif;
   overflow:hidden;height:100vh;width:100vw;
   touch-action:none;
 }
-canvas{display:block;position:absolute;top:0;left:0;}
-#ui{position:absolute;top:0;left:0;right:0;pointer-events:none;z-index:10;}
-#hud{
-  display:flex;justify-content:space-between;align-items:flex-start;
-  padding:10px 12px;
-}
-.hud-box{
-  background:rgba(0,0,0,0.45);border-radius:12px;
-  padding:6px 12px;backdrop-filter:blur(6px);
-  border:1px solid rgba(255,255,255,0.12);
-}
-.hud-score{font-family:'Bangers',cursive;font-size:28px;color:var(--primary);letter-spacing:1px;line-height:1;}
-.hud-label{font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;}
-.hud-coins{display:flex;align-items:center;gap:5px;font-family:'Bangers',cursive;font-size:22px;color:var(--primary);}
-.hud-mult{font-family:'Bangers',cursive;font-size:20px;color:#FF6B00;}
-.hud-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;}
-
-/* Power bars */
-#powerUps{
-  position:absolute;top:85px;left:12px;
-  display:flex;flex-direction:column;gap:4px;
-  pointer-events:none;
-}
-.power-badge{
-  display:none;align-items:center;gap:5px;
-  background:rgba(0,0,0,0.5);border-radius:20px;
-  padding:4px 10px;font-size:11px;font-weight:700;
-  border:1px solid rgba(255,255,255,0.15);
-}
-.power-badge.active{display:flex;}
-.power-bar{width:60px;height:4px;background:rgba(255,255,255,0.2);border-radius:2px;overflow:hidden;}
-.power-fill{height:100%;border-radius:2px;transition:width 0.1s;}
-
-/* Lives */
-#livesBar{display:flex;gap:3px;justify-content:flex-end;}
 
 /* ===== SCREENS ===== */
 .overlay{
@@ -65,11 +32,12 @@ canvas{display:block;position:absolute;top:0;left:0;}
 /* ===== AUTH SCREEN ===== */
 #authScreen{
   background:linear-gradient(180deg,#2d0b6e 0%,#1a0533 50%,#0d0020 100%);
-  z-index:100;
+  z-index:100;position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
 }
 .auth-logo{
   font-family:'Bangers',cursive;font-size:52px;
-  background:linear-gradient(135deg,#FFD700,#FF6B00);
+  background:linear-gradient(135deg,#FF3366,#FF9900,#FFFF00);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
   letter-spacing:3px;margin-bottom:6px;
 }
@@ -84,7 +52,7 @@ canvas{display:block;position:absolute;top:0;left:0;}
   font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;
   transition:all 0.2s;color:rgba(255,255,255,0.4);
 }
-.auth-tab.active{background:rgba(255,215,0,0.15);color:var(--primary);}
+.auth-tab.active{background:rgba(255,51,102,0.15);color:var(--accent);}
 .auth-inp{
   width:100%;background:rgba(255,255,255,0.06);
   border:1px solid rgba(255,255,255,0.12);border-radius:12px;
@@ -94,15 +62,15 @@ canvas{display:block;position:absolute;top:0;left:0;}
 .auth-inp:focus{border-color:var(--accent);}
 .auth-inp::placeholder{color:rgba(255,255,255,0.3);}
 .btn-auth{
-  width:100%;background:linear-gradient(135deg,#FFD700,#FF6B00);
-  color:#000;border:none;border-radius:14px;padding:14px;
+  width:100%;background:linear-gradient(135deg,#FF3366,#FF9900);
+  color:#fff;border:none;border-radius:14px;padding:14px;
   font-family:'Bangers',cursive;font-size:20px;letter-spacing:2px;cursor:pointer;
   margin-top:4px;
 }
 .auth-err{font-size:12px;color:var(--danger);text-align:center;margin-top:8px;min-height:16px;}
 .auth-spinner{
-  display:none;width:36px;height:36px;border:3px solid rgba(255,215,0,0.2);
-  border-top-color:var(--primary);border-radius:50%;
+  display:none;width:36px;height:36px;border:3px solid rgba(255,51,102,0.2);
+  border-top-color:var(--accent);border-radius:50%;
   animation:spin 0.7s linear infinite;margin:10px auto;
 }
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -121,66 +89,72 @@ canvas{display:block;position:absolute;top:0;left:0;}
 /* HOME */
 #homeScreen{
   background:linear-gradient(180deg,#2d0b6e 0%,#1a0533 50%,#0d0020 100%);
+  position:absolute;inset:0;z-index:40;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:0;padding:0 20px 90px;
 }
+#homeScreen.hidden{display:none;}
 .game-logo{
-  font-family:'Bangers',cursive;font-size:58px;
-  background:linear-gradient(135deg,#FFD700,#FF6B00);
+  font-family:'Bangers',cursive;font-size:54px;
+  background:linear-gradient(135deg,#FF3366,#FF9900,#FFFF00,#33FF66,#3399FF,#CC33FF);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  text-shadow:none;letter-spacing:3px;
-  animation:logoPulse 2s ease-in-out infinite;
-  margin-bottom:4px;
+  letter-spacing:3px;animation:logoPulse 2s ease-in-out infinite;
+  margin-bottom:2px;text-align:center;
 }
-@keyframes logoPulse{0%,100%{filter:drop-shadow(0 0 10px rgba(255,215,0,0.5))}50%{filter:drop-shadow(0 0 25px rgba(255,215,0,0.9))}}
-.game-sub{font-size:13px;color:rgba(255,255,255,0.5);letter-spacing:3px;text-transform:uppercase;margin-bottom:28px;}
-.character-preview{font-size:72px;margin-bottom:20px;animation:bounce 1s ease-in-out infinite;}
-@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes logoPulse{0%,100%{filter:drop-shadow(0 0 10px rgba(255,51,102,0.5))}50%{filter:drop-shadow(0 0 25px rgba(255,153,0,0.9))}}
+.game-sub{font-size:12px;color:rgba(255,255,255,0.5);letter-spacing:3px;text-transform:uppercase;margin-bottom:16px;text-align:center;}
+.candy-preview{font-size:52px;margin-bottom:18px;animation:bounce 1s ease-in-out infinite;line-height:1;text-align:center;letter-spacing:2px;}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 .btn-play{
-  background:linear-gradient(135deg,#FFD700,#FF6B00);
-  color:#000;border:none;border-radius:30px;
-  padding:16px 60px;font-family:'Bangers',cursive;
+  background:linear-gradient(135deg,#FF3366,#FF9900);
+  color:#fff;border:none;border-radius:30px;
+  padding:16px 64px;font-family:'Bangers',cursive;
   font-size:26px;letter-spacing:2px;cursor:pointer;
-  box-shadow:0 6px 30px rgba(255,107,0,0.5);
+  box-shadow:0 6px 30px rgba(255,51,102,0.5);
   pointer-events:all;transition:transform 0.15s;
+  display:block;width:fit-content;margin:0 auto;
 }
 .btn-play:active{transform:scale(0.95);}
 .coin-rate-tag{
-  margin-top:18px;background:rgba(255,215,0,0.1);
+  margin-top:14px;background:rgba(255,215,0,0.1);
   border:1px solid rgba(255,215,0,0.3);
   border-radius:20px;padding:7px 18px;
   font-size:12px;color:var(--primary);pointer-events:all;
+  text-align:center;
 }
 .home-user-tag{
-  font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:8px;
-  display:flex;align-items:center;gap:6px;pointer-events:all;
+  font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:10px;
+  display:flex;align-items:center;justify-content:center;gap:6px;pointer-events:all;
+  width:100%;
 }
 .home-nav{
-  position:absolute;bottom:20px;left:0;right:0;
+  position:absolute;bottom:24px;left:0;right:0;
   display:flex;justify-content:center;gap:12px;
-  pointer-events:all;
+  pointer-events:all;padding:0 20px;
 }
 .home-nav-btn{
-  display:flex;flex-direction:column;align-items:center;gap:3px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
   background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);
-  border-radius:14px;padding:10px 20px;cursor:pointer;
+  border-radius:16px;padding:12px 0;cursor:pointer;
   font-size:10px;color:rgba(255,255,255,0.7);font-weight:700;
-  letter-spacing:1px;text-transform:uppercase;min-width:70px;
+  letter-spacing:1px;text-transform:uppercase;flex:1;max-width:130px;
   transition:all 0.2s;
 }
-.home-nav-btn:active{background:rgba(255,255,255,0.15);}
-.home-nav-btn .ni{font-size:22px;margin-bottom:2px;}
+.home-nav-btn:active{background:rgba(255,255,255,0.15);transform:scale(0.97);}
+.home-nav-btn .ni{font-size:24px;margin-bottom:2px;}
 .btn-logout-home{
-  position:absolute;top:14px;right:14px;
-  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
-  color:rgba(255,255,255,0.5);border-radius:12px;padding:6px 14px;
+  position:absolute;top:16px;right:16px;
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
+  color:rgba(255,255,255,0.55);border-radius:12px;padding:7px 16px;
   font-size:11px;font-weight:700;cursor:pointer;pointer-events:all;
+  letter-spacing:0.5px;
 }
 
+/* ===== ADMIN-ONLY ===== */
+.admin-only{display:none!important;}
+.admin-only.admin-visible{display:flex!important;}
 
-/* ===== ADMIN-ONLY: hidden by default, shown via JS for admin email only ===== */
-.admin-only { display: none !important; }
-.admin-only.admin-visible { display: flex !important; }
-
-/* ===== BROADCAST REWARD MODULE ===== */
+/* ===== BROADCAST REWARD ===== */
 .bc-card{margin:0 14px 14px;background:rgba(255,215,0,0.03);border:1px solid rgba(255,215,0,0.15);border-radius:14px;padding:16px;}
 .bc-desc{font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px;line-height:1.7;}
 .bc-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
@@ -189,22 +163,21 @@ canvas{display:block;position:absolute;top:0;left:0;}
 .bc-btn{background:linear-gradient(135deg,#FFD700,#FF6B00);color:#000;border:none;border-radius:10px;padding:10px 18px;font-family:'Bangers',cursive;font-size:16px;letter-spacing:1px;cursor:pointer;white-space:nowrap;}
 .bc-progress{margin-top:8px;font-size:11px;color:rgba(255,255,255,0.4);text-align:center;min-height:16px;}
 
-/* ===== DAILY CHECK-IN POPUP ===== */
+/* ===== DAILY CHECK-IN ===== */
 #checkinPopup{
   position:fixed;inset:0;z-index:300;display:none;
   align-items:center;justify-content:center;
-  background:rgba(0,0,0,0.82);backdrop-filter:blur(10px);
-  padding:20px;
+  background:rgba(0,0,0,0.82);backdrop-filter:blur(10px);padding:20px;
 }
 #checkinPopup.open{display:flex;}
 .ci-box{
   background:linear-gradient(160deg,#1a0a4e,#2d0b6e,#1a0533);
-  border:1px solid rgba(255,215,0,0.3);border-radius:24px;
+  border:1px solid rgba(255,51,102,0.3);border-radius:24px;
   padding:28px 22px;width:100%;max-width:340px;text-align:center;
-  box-shadow:0 0 60px rgba(255,215,0,0.15);position:relative;
+  box-shadow:0 0 60px rgba(255,51,102,0.15);position:relative;
 }
 .ci-title{font-family:'Bangers',cursive;font-size:30px;letter-spacing:2px;
-  background:linear-gradient(135deg,#FFD700,#FF6B00);
+  background:linear-gradient(135deg,#FF3366,#FF9900);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;}
 .ci-sub{font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:20px;letter-spacing:1px;}
 .ci-days{display:flex;gap:6px;justify-content:center;margin-bottom:20px;flex-wrap:wrap;}
@@ -212,49 +185,50 @@ canvas{display:block;position:absolute;top:0;left:0;}
   width:40px;height:56px;border-radius:12px;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:3px;
   background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
-  font-size:9px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.5px;
-  text-transform:uppercase;transition:all 0.2s;
+  font-size:9px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.5px;text-transform:uppercase;transition:all 0.2s;
 }
 .ci-day .ci-coins{font-family:'Bangers',cursive;font-size:13px;color:rgba(255,255,255,0.4);}
 .ci-day.claimed{background:rgba(0,255,136,0.1);border-color:rgba(0,255,136,0.3);}
 .ci-day.claimed .ci-coins{color:var(--success);}
-.ci-day.today{background:rgba(255,215,0,0.15);border-color:rgba(255,215,0,0.5);
-  box-shadow:0 0 14px rgba(255,215,0,0.25);transform:scale(1.08);}
-.ci-day.today .ci-coins{color:var(--primary);}
+.ci-day.today{background:rgba(255,51,102,0.15);border-color:rgba(255,51,102,0.5);
+  box-shadow:0 0 14px rgba(255,51,102,0.25);transform:scale(1.08);}
+.ci-day.today .ci-coins{color:var(--accent);}
 .ci-day.future{opacity:0.4;}
-.ci-reward{font-family:'Bangers',cursive;font-size:42px;color:var(--primary);
-  margin-bottom:4px;text-shadow:0 0 20px rgba(255,215,0,0.5);}
+.ci-reward{font-family:'Bangers',cursive;font-size:42px;color:var(--accent);
+  margin-bottom:4px;text-shadow:0 0 20px rgba(255,51,102,0.5);}
 .ci-reward-label{font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:20px;}
 .ci-btn{
-  width:100%;background:linear-gradient(135deg,#FFD700,#FF6B00);
-  color:#000;border:none;border-radius:14px;padding:14px;
+  width:100%;background:linear-gradient(135deg,#FF3366,#FF9900);
+  color:#fff;border:none;border-radius:14px;padding:14px;
   font-family:'Bangers',cursive;font-size:22px;letter-spacing:2px;cursor:pointer;
-  box-shadow:0 4px 20px rgba(255,107,0,0.4);transition:transform 0.15s;margin-bottom:10px;
+  box-shadow:0 4px 20px rgba(255,51,102,0.4);transition:transform 0.15s;margin-bottom:10px;
 }
 .ci-btn:active{transform:scale(0.97);}
-.ci-btn:disabled{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.3);
-  box-shadow:none;cursor:default;}
-.ci-skip{font-size:12px;color:rgba(255,255,255,0.25);cursor:pointer;
-  text-decoration:underline;padding:4px 8px;}
+.ci-btn:disabled{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.3);box-shadow:none;cursor:default;}
+.ci-skip{font-size:12px;color:rgba(255,255,255,0.25);cursor:pointer;text-decoration:underline;padding:4px 8px;}
 .ci-streak-info{
   display:inline-flex;align-items:center;gap:6px;margin-bottom:16px;
   background:rgba(255,107,0,0.1);border:1px solid rgba(255,107,0,0.25);
   border-radius:20px;padding:5px 14px;font-size:12px;color:#FF6B00;font-weight:700;
 }
 
-/* GAME OVER */
-#gameoverScreen{background:rgba(0,0,0,0.85);}
-.go-title{font-family:'Bangers',cursive;font-size:52px;color:var(--danger);letter-spacing:2px;margin-bottom:6px;}
+/* ===== GAME OVER ===== */
+#gameoverScreen{background:rgba(0,0,0,0.88);z-index:50;}
+#gameoverScreen.hidden{display:none;}
+.go-title{font-family:'Bangers',cursive;font-size:52px;
+  background:linear-gradient(135deg,#FF3366,#FF9900);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  letter-spacing:2px;margin-bottom:6px;}
 .go-score{font-family:'Bangers',cursive;font-size:32px;color:var(--primary);margin-bottom:4px;}
 .go-coins{font-size:16px;color:var(--success);margin-bottom:6px;}
 .go-best{font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:24px;}
 .go-btns{display:flex;flex-direction:column;gap:10px;align-items:center;pointer-events:all;}
 .btn-restart{
-  background:linear-gradient(135deg,#FFD700,#FF6B00);
-  color:#000;border:none;border-radius:25px;
+  background:linear-gradient(135deg,#FF3366,#FF9900);
+  color:#fff;border:none;border-radius:25px;
   padding:14px 50px;font-family:'Bangers',cursive;
   font-size:22px;letter-spacing:2px;cursor:pointer;
-  box-shadow:0 4px 20px rgba(255,107,0,0.4);
+  box-shadow:0 4px 20px rgba(255,51,102,0.4);
 }
 .btn-wallet{
   background:rgba(255,255,255,0.1);color:#fff;
@@ -263,51 +237,129 @@ canvas{display:block;position:absolute;top:0;left:0;}
   font-size:14px;font-weight:700;cursor:pointer;
 }
 
-/* PAUSE */
-#pauseBtn{
-  position:absolute;top:12px;left:50%;transform:translateX(-50%);
-  background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.15);
-  color:#fff;border-radius:20px;padding:5px 16px;
-  font-size:11px;font-weight:700;cursor:pointer;
-  pointer-events:all;z-index:15;letter-spacing:1px;
+/* ===== HUD ===== */
+#ui{position:absolute;top:0;left:0;right:0;pointer-events:none;z-index:10;}
+#hud{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 12px;}
+.hud-box{
+  background:rgba(0,0,0,0.45);border-radius:12px;
+  padding:6px 12px;backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,0.12);
 }
+.hud-score{font-family:'Bangers',cursive;font-size:28px;color:var(--primary);letter-spacing:1px;line-height:1;}
+.hud-label{font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;}
+.hud-coins{display:flex;align-items:center;gap:5px;font-family:'Bangers',cursive;font-size:22px;color:var(--primary);}
+.hud-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;}
+.hud-moves{font-family:'Bangers',cursive;font-size:22px;color:#FF9900;}
 
-/* COIN POP */
-.coin-pop{
-  position:absolute;font-family:'Bangers',cursive;font-size:18px;
-  color:var(--primary);pointer-events:none;z-index:20;
-  animation:coinFly 0.7s ease-out forwards;
+/* ===== GAME CONTAINER ===== */
+#gameScreen{
+  position:absolute;inset:0;display:none;
+  flex-direction:column;align-items:center;
+  background:linear-gradient(180deg,#0d0020 0%,#1a0533 100%);
 }
-@keyframes coinFly{
+#gameScreen.active{display:flex;}
+
+/* Candy board */
+#boardWrap{
+  position:relative;
+  margin-top:0;
+  display:flex;align-items:center;justify-content:center;
+  flex:1;
+}
+#candyBoard{
+  display:grid;
+  gap:4px;
+  padding:12px;
+  background:rgba(0,0,0,0.4);
+  border-radius:20px;
+  border:1px solid rgba(255,255,255,0.1);
+  box-shadow:0 8px 40px rgba(255,51,102,0.2);
+  touch-action:none;
+}
+.candy-cell{
+  width:44px;height:44px;
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;
+  cursor:pointer;
+  transition:transform 0.12s, box-shadow 0.12s;
+  position:relative;
+  user-select:none;
+  box-shadow:0 3px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.4);
+}
+.candy-cell:active{transform:scale(0.9);}
+.candy-cell.selected{
+  transform:scale(1.18);
+  box-shadow:0 0 0 3px #fff, 0 0 20px rgba(255,255,255,0.6), 0 4px 12px rgba(0,0,0,0.5);
+  z-index:5;
+}
+.candy-cell.hint{animation:hintPulse 0.6s ease-in-out 3;}
+@keyframes hintPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.candy-cell.matched{animation:matchPop 0.3s ease-out forwards;}
+@keyframes matchPop{0%{transform:scale(1.2);opacity:1}100%{transform:scale(0);opacity:0}}
+.candy-cell.falling{animation:fallIn 0.3s ease-in;}
+@keyframes fallIn{0%{transform:translateY(-50px);opacity:0}100%{transform:translateY(0);opacity:1}}
+.candy-cell.swapping{transition:transform 0.2s ease;}
+
+/* Candy colors */
+.c0{background:radial-gradient(circle at 35% 35%,#ff6699,#cc0033);}/* red */
+.c1{background:radial-gradient(circle at 35% 35%,#ffcc44,#cc7700);}/* orange */
+.c2{background:radial-gradient(circle at 35% 35%,#ffff66,#aaaa00);}/* yellow */
+.c3{background:radial-gradient(circle at 35% 35%,#66ff88,#00aa44);}/* green */
+.c4{background:radial-gradient(circle at 35% 35%,#66aaff,#0044cc);}/* blue */
+.c5{background:radial-gradient(circle at 35% 35%,#cc66ff,#880099);}/* purple */
+
+/* Special candies */
+.candy-cell.striped-h::after{content:'';position:absolute;inset:0;border-radius:50%;background:repeating-linear-gradient(0deg,rgba(255,255,255,0.35) 0px,rgba(255,255,255,0.35) 4px,transparent 4px,transparent 8px);}
+.candy-cell.striped-v::after{content:'';position:absolute;inset:0;border-radius:50%;background:repeating-linear-gradient(90deg,rgba(255,255,255,0.35) 0px,rgba(255,255,255,0.35) 4px,transparent 4px,transparent 8px);}
+.candy-cell.wrapped{box-shadow:0 0 0 3px rgba(255,255,255,0.8),0 0 12px rgba(255,255,255,0.5)!important;}
+.candy-cell.color-bomb{background:radial-gradient(circle at 35% 35%,#ffffff,#aaaaaa)!important;font-size:22px;animation:rainbowSpin 2s linear infinite;}
+@keyframes rainbowSpin{0%{filter:hue-rotate(0deg)}100%{filter:hue-rotate(360deg)}}
+
+/* Score pop */
+.score-pop{
+  position:absolute;font-family:'Bangers',cursive;font-size:22px;
+  color:#fff;pointer-events:none;z-index:20;text-shadow:0 2px 8px rgba(0,0,0,0.7);
+  animation:scoreFly 0.8s ease-out forwards;
+}
+@keyframes scoreFly{
   0%{opacity:1;transform:translate(0,0) scale(1);}
-  100%{opacity:0;transform:translate(var(--dx),calc(var(--dy) - 60px)) scale(1.6);}
-}
-.mult-pop{
-  position:absolute;font-family:'Bangers',cursive;font-size:26px;
-  color:#FF6B00;pointer-events:none;z-index:20;
-  animation:multFly 0.8s ease-out forwards;
-}
-@keyframes multFly{
-  0%{opacity:1;transform:translateY(0) scale(0.8);}
-  50%{opacity:1;transform:translateY(-30px) scale(1.2);}
-  100%{opacity:0;transform:translateY(-60px) scale(1);}
+  100%{opacity:0;transform:translate(var(--dx),calc(var(--dy) - 70px)) scale(1.4);}
 }
 
-/* FLASH */
-#hitFlash{
-  position:absolute;inset:0;z-index:8;
-  background:rgba(255,0,0,0.35);pointer-events:none;
-  opacity:0;transition:opacity 0.05s;
+/* Level / progress bar */
+#levelBar{
+  width:calc(100% - 24px);max-width:380px;
+  background:rgba(255,255,255,0.08);
+  border-radius:10px;height:10px;
+  overflow:hidden;margin:0 12px 6px;
 }
+#levelFill{height:100%;background:linear-gradient(90deg,#FF3366,#FF9900,#FFFF00);border-radius:10px;transition:width 0.4s;}
 
-/* SWIPE HINT */
-#swipeHint{
-  position:absolute;bottom:80px;left:0;right:0;
-  text-align:center;font-size:12px;color:rgba(255,255,255,0.4);
-  pointer-events:none;z-index:15;
-  animation:fadeHint 3s ease-out 1s forwards;
+/* Level target */
+#levelTarget{font-size:11px;color:rgba(255,255,255,0.5);text-align:center;margin-bottom:4px;letter-spacing:1px;}
+
+/* ===== LEVEL COMPLETE ===== */
+#levelCompleteScreen{
+  position:absolute;inset:0;z-index:55;
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.82);backdrop-filter:blur(10px);
 }
-@keyframes fadeHint{0%{opacity:1}80%{opacity:1}100%{opacity:0}}
+#levelCompleteScreen.open{display:flex;}
+.lc-title{font-family:'Bangers',cursive;font-size:52px;
+  background:linear-gradient(135deg,#FFD700,#33FF66);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  letter-spacing:2px;margin-bottom:8px;}
+.lc-stars{font-size:52px;margin-bottom:12px;letter-spacing:8px;}
+.lc-score{font-family:'Bangers',cursive;font-size:28px;color:var(--primary);margin-bottom:4px;}
+.lc-coins{font-size:16px;color:var(--success);margin-bottom:24px;}
+.btn-next{
+  background:linear-gradient(135deg,#FFD700,#33FF66);
+  color:#000;border:none;border-radius:25px;
+  padding:14px 50px;font-family:'Bangers',cursive;
+  font-size:22px;letter-spacing:2px;cursor:pointer;
+  box-shadow:0 4px 20px rgba(255,215,0,0.4);pointer-events:all;
+}
 
 /* ===== WALLET SCREEN ===== */
 #walletView{
@@ -339,7 +391,7 @@ canvas{display:block;position:absolute;top:0;left:0;}
 }
 .rate-card{
   margin:0 16px 16px;padding:12px 16px;
-  background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.15);
+  background:rgba(255,51,102,0.05);border:1px solid rgba(255,51,102,0.15);
   border-radius:14px;display:flex;align-items:center;gap:10px;
 }
 .rate-card .ri{font-size:24px;}
@@ -354,221 +406,109 @@ canvas{display:block;position:absolute;top:0;left:0;}
   border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:18px;
 }
 .inp-group{margin-bottom:14px;}
-.inp-label{display:block;font-size:11px;color:rgba(255,255,255,0.4);
-  text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.inp-label{font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px;}
 .inp-field{
-  width:100%;background:rgba(255,255,255,0.06);
-  border:1px solid rgba(255,255,255,0.12);border-radius:12px;
-  padding:12px 14px;color:#fff;font-family:'Nunito',sans-serif;
+  width:100%;background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);border-radius:12px;
+  padding:11px 14px;color:#fff;font-family:'Nunito',sans-serif;
   font-size:14px;font-weight:600;outline:none;
 }
-.inp-field:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,229,255,0.1);}
+.inp-field:focus{border-color:var(--accent);}
 .inp-field option{background:#1a0533;}
 .wd-preview{
-  background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.15);
-  border-radius:10px;padding:10px 14px;margin-bottom:14px;
-  font-size:13px;color:rgba(255,255,255,0.5);
+  background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.15);
+  border-radius:10px;padding:10px 14px;font-size:13px;color:var(--success);
+  margin-bottom:14px;text-align:center;font-weight:700;
 }
-.wd-preview span{color:var(--primary);font-weight:800;font-size:15px;}
 .btn-wd{
-  width:100%;background:linear-gradient(135deg,#FF6B00,#FF3300);
-  color:#fff;border:none;border-radius:14px;padding:16px;
+  width:100%;background:linear-gradient(135deg,#FF3366,#FF9900);
+  color:#fff;border:none;border-radius:14px;padding:14px;
   font-family:'Bangers',cursive;font-size:20px;letter-spacing:2px;cursor:pointer;
-  box-shadow:0 4px 20px rgba(255,107,0,0.35);transition:transform 0.15s;
 }
-.btn-wd:active{transform:scale(0.97);}
 .tx-item{
-  display:flex;align-items:center;justify-content:space-between;
-  margin:0 16px 8px;padding:14px;
+  display:flex;align-items:center;gap:12px;
+  margin:0 16px 8px;padding:12px 14px;
   background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);
   border-radius:14px;
 }
-.tx-ico{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-right:10px;background:rgba(255,51,102,0.12);}
+.tx-ico{font-size:24px;}
 .tx-nm{font-size:13px;font-weight:700;}
-.tx-dt{font-size:11px;color:rgba(255,255,255,0.35);margin-top:2px;}
-.tx-amt{font-family:'Bangers',cursive;font-size:16px;color:var(--danger);}
-.tx-st{font-size:10px;padding:2px 8px;border-radius:10px;margin-top:3px;text-align:right;}
-.tx-st.pending{background:rgba(255,215,0,0.15);color:var(--primary);}
-.tx-st.approved{background:rgba(0,255,136,0.15);color:var(--success);}
-.tx-st.rejected{background:rgba(255,51,102,0.15);color:var(--danger);}
+.tx-dt{font-size:11px;color:rgba(255,255,255,0.35);}
+.tx-amt{font-family:'Bangers',cursive;font-size:18px;color:var(--danger);}
+.tx-st{font-size:10px;font-weight:700;text-transform:uppercase;border-radius:6px;padding:2px 8px;display:inline-block;margin-top:2px;}
+.tx-st.pending{background:rgba(255,153,0,0.15);color:#FF9900;}
+.tx-st.approved{background:rgba(0,255,136,0.1);color:var(--success);}
+.tx-st.rejected{background:rgba(255,51,102,0.1);color:var(--danger);}
 
-/* ===== PROFILE ===== */
+/* ===== PROFILE VIEW ===== */
 #profileView{
   position:absolute;inset:0;z-index:60;display:none;
   background:linear-gradient(180deg,#0f0828 0%,#1a0533 100%);
   flex-direction:column;overflow-y:auto;
 }
 #profileView.open{display:flex;}
-.pv-hero{
-  background:linear-gradient(135deg,#1a0a4e,#2d0b6e);
-  padding:30px 20px 24px;text-align:center;
-  border-bottom:1px solid rgba(255,255,255,0.08);
-  position:relative;overflow:hidden;
-}
-.pv-hero::before{
-  content:'';position:absolute;top:-40px;left:50%;transform:translateX(-50%);
-  width:180px;height:180px;
-  background:radial-gradient(circle,rgba(255,215,0,0.12) 0%,transparent 70%);
-  border-radius:50%;
-}
-.pv-avatar{
-  width:80px;height:80px;border-radius:50%;margin:0 auto 12px;
-  background:linear-gradient(135deg,#FFD700,#FF6B00);
-  display:flex;align-items:center;justify-content:center;font-size:40px;
-  border:3px solid rgba(255,215,0,0.4);
-  box-shadow:0 0 20px rgba(255,215,0,0.3);position:relative;z-index:1;
-}
-.pv-name{font-family:'Bangers',cursive;font-size:26px;letter-spacing:1px;position:relative;z-index:1;}
-.pv-id{font-size:12px;color:rgba(255,255,255,0.4);position:relative;z-index:1;}
-.pv-level{
-  display:inline-flex;align-items:center;gap:6px;margin-top:10px;
-  background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.25);
-  border-radius:20px;padding:5px 14px;font-size:12px;color:var(--primary);
-  font-weight:700;position:relative;z-index:1;
-}
-.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px;}
-.stat-c{
-  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
-  border-radius:14px;padding:14px 8px;text-align:center;
-}
-.stat-v{font-family:'Bangers',cursive;font-size:22px;color:var(--accent);}
-.stat-l{font-size:9px;color:rgba(255,255,255,0.35);margin-top:3px;text-transform:uppercase;letter-spacing:1px;}
-.ach-item{
-  display:flex;align-items:center;gap:12px;
-  margin:0 14px 8px;padding:12px 14px;
-  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);
-  border-radius:14px;
-}
-.ach-ico{font-size:28px;}
+.pv-hero{text-align:center;padding:24px 20px 20px;}
+.pv-avatar{font-size:64px;margin-bottom:10px;}
+.pv-name{font-family:'Bangers',cursive;font-size:28px;letter-spacing:1px;}
+.pv-id{font-size:12px;color:rgba(255,255,255,0.35);margin-bottom:6px;}
+.pv-level{font-size:13px;color:var(--accent);font-weight:700;}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 16px 16px;}
+.stat-c{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:12px;text-align:center;}
+.stat-v{font-family:'Bangers',cursive;font-size:22px;color:var(--primary);}
+.stat-l{font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;text-transform:uppercase;letter-spacing:0.5px;}
+.ach-item{display:flex;align-items:center;gap:12px;margin:0 14px 8px;padding:12px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:14px;}
+.ach-ico{font-size:26px;}
 .ach-nm{font-size:13px;font-weight:700;}
 .ach-ds{font-size:11px;color:rgba(255,255,255,0.35);}
-.ach-badge{
-  margin-left:auto;font-size:10px;padding:3px 8px;border-radius:10px;
-  background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3);
-  white-space:nowrap;
-}
-.ach-badge.done{background:rgba(0,255,136,0.12);color:var(--success);}
-.menu-it{
-  display:flex;align-items:center;gap:14px;
-  margin:0 14px 8px;padding:14px;
-  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);
-  border-radius:14px;cursor:pointer;
-}
+.ach-badge{font-size:10px;font-weight:700;color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.05);border-radius:8px;padding:4px 10px;white-space:nowrap;}
+.ach-badge.done{color:var(--success);background:rgba(0,255,136,0.1);}
+.menu-it{display:flex;align-items:center;gap:12px;margin:0 14px 8px;padding:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:14px;cursor:pointer;}
 .menu-it:active{background:rgba(255,255,255,0.07);}
-.mi-ic{font-size:22px;width:32px;text-align:center;}
+.mi-ic{font-size:22px;}
 .mi-lb{font-size:14px;font-weight:700;flex:1;}
-.mi-ar{color:rgba(255,255,255,0.25);font-size:18px;}
+.mi-ar{font-size:18px;color:rgba(255,255,255,0.25);}
 
-/* ===== ADMIN ===== */
+/* ===== ADMIN VIEW ===== */
 #adminView{
   position:absolute;inset:0;z-index:70;display:none;
-  background:#08050f;flex-direction:column;overflow-y:auto;
+  background:linear-gradient(180deg,#0d0020 0%,#1a0533 100%);
+  flex-direction:column;overflow-y:auto;
 }
 #adminView.open{display:flex;}
-.av-header{
-  display:flex;align-items:center;gap:10px;padding:16px;
-  background:linear-gradient(135deg,#1a0030,#300010);
-  border-bottom:2px solid rgba(255,51,102,0.3);
-  position:sticky;top:0;z-index:2;
-}
-.av-title{font-family:'Bangers',cursive;font-size:22px;color:var(--danger);letter-spacing:1px;}
-.av-badge{
-  background:rgba(255,51,102,0.15);border:1px solid rgba(255,51,102,0.3);
-  color:var(--danger);font-size:10px;padding:3px 8px;border-radius:10px;
-}
-.av-back{background:none;border:none;color:rgba(255,255,255,0.5);font-size:22px;cursor:pointer;margin-left:auto;}
-.ad-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:14px;}
-.ad-stat{
-  background:rgba(255,51,102,0.05);border:1px solid rgba(255,51,102,0.15);
-  border-radius:14px;padding:16px;text-align:center;
-}
-.ad-sv{font-family:'Bangers',cursive;font-size:28px;color:var(--danger);}
-.ad-sl{font-size:10px;color:rgba(255,255,255,0.35);margin-top:3px;text-transform:uppercase;letter-spacing:1px;}
-.ad-sec-head{
-  margin:0 14px 8px;padding-bottom:6px;
-  font-size:11px;color:rgba(255,51,102,0.7);
-  text-transform:uppercase;letter-spacing:2px;font-weight:700;
-  border-bottom:1px solid rgba(255,51,102,0.15);
-}
-.wr-card{
-  margin:0 14px 10px;
-  background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);
-  border-radius:14px;padding:14px;
-}
-.wr-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-.wr-user{font-size:14px;font-weight:700;}
-.wr-amt{font-family:'Bangers',cursive;font-size:18px;color:var(--primary);}
-.wr-det{font-size:12px;color:rgba(255,255,255,0.35);line-height:1.7;margin-bottom:10px;}
-.wr-acts{display:flex;gap:8px;}
-.btn-app{
-  flex:1;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.25);
-  color:var(--success);border-radius:10px;padding:10px;
-  font-weight:800;font-size:13px;cursor:pointer;
-}
-.btn-app:active{background:rgba(0,255,136,0.2);}
-.btn-rej{
-  flex:1;background:rgba(255,51,102,0.1);border:1px solid rgba(255,51,102,0.25);
-  color:var(--danger);border-radius:10px;padding:10px;
-  font-weight:800;font-size:13px;cursor:pointer;
-}
-.btn-rej:active{background:rgba(255,51,102,0.2);}
-.wr-done{
-  text-align:center;padding:10px;border-radius:10px;
-  font-size:12px;font-weight:700;
-}
+.av-header{display:flex;align-items:center;gap:10px;padding:14px;border-bottom:1px solid rgba(255,51,102,0.15);position:sticky;top:0;background:#0d0020;z-index:2;}
+.av-title{font-family:'Bangers',cursive;font-size:22px;letter-spacing:1px;color:var(--danger);}
+.av-badge{background:rgba(255,51,102,0.1);border:1px solid rgba(255,51,102,0.3);color:var(--danger);border-radius:20px;padding:2px 10px;font-size:10px;font-weight:700;letter-spacing:1px;}
+.av-back{background:none;border:none;color:rgba(255,255,255,0.6);font-size:20px;cursor:pointer;padding:4px;margin-left:auto;}
+.ad-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:14px;}
+.ad-stat{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:12px;text-align:center;}
+.ad-sv{font-family:'Bangers',cursive;font-size:24px;color:var(--danger);}
+.ad-sl{font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;}
+.ad-sec-head{padding:4px 14px 8px;font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:2px;font-weight:700;}
+.wr-card{margin:0 14px 10px;padding:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;}
+.wr-h{display:flex;justify-content:space-between;margin-bottom:6px;}
+.wr-user{font-size:13px;font-weight:700;}
+.wr-amt{font-family:'Bangers',cursive;font-size:18px;color:var(--success);}
+.wr-det{font-size:11px;color:rgba(255,255,255,0.35);line-height:1.7;}
+.wr-acts{display:flex;gap:8px;margin-top:10px;}
+.btn-app{flex:1;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:var(--success);border-radius:10px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;}
+.btn-rej{flex:1;background:rgba(255,51,102,0.1);border:1px solid rgba(255,51,102,0.3);color:var(--danger);border-radius:10px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;}
+.btn-app:disabled,.btn-rej:disabled{opacity:0.4;cursor:default;}
+.wr-done{text-align:center;padding:10px;border-radius:10px;font-size:12px;font-weight:700;}
 .wr-done.approved{background:rgba(0,255,136,0.08);color:var(--success);}
 .wr-done.rejected{background:rgba(255,51,102,0.08);color:var(--danger);}
-
-/* ADMIN LOGIN */
-.al-wrap{
-  flex:1;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;padding:30px;gap:14px;
-}
+.al-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;gap:14px;}
 .al-wrap h2{font-family:'Bangers',cursive;font-size:28px;color:var(--danger);letter-spacing:1px;}
 .al-wrap p{font-size:13px;color:rgba(255,255,255,0.4);text-align:center;}
-.al-pin{
-  width:100%;max-width:260px;
-  background:rgba(255,255,255,0.04);border:1px solid rgba(255,51,102,0.3);
-  border-radius:14px;padding:14px;color:#fff;
-  font-family:'Nunito',sans-serif;font-size:22px;text-align:center;
-  outline:none;letter-spacing:10px;
-}
-.al-btn{
-  background:linear-gradient(135deg,var(--danger),#990020);
-  color:#fff;border:none;border-radius:14px;padding:14px 50px;
-  font-family:'Bangers',cursive;font-size:22px;letter-spacing:2px;cursor:pointer;
-}
-.gc-card{
-  margin:0 14px 14px;background:rgba(255,255,255,0.02);
-  border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:14px;
-}
-.gc-inp{
-  width:100%;background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,51,102,0.25);border-radius:12px;
-  padding:12px 14px;color:#fff;font-family:'Nunito',sans-serif;
-  font-size:14px;font-weight:700;outline:none;margin-bottom:10px;
-}
-.gc-btn{
-  width:100%;background:linear-gradient(135deg,var(--danger),#990020);
-  color:#fff;border:none;border-radius:12px;padding:12px;
-  font-family:'Bangers',cursive;font-size:18px;letter-spacing:1px;cursor:pointer;
-}
-
-/* Admin user selector */
-.user-selector-wrap{margin:0 14px 12px;}
-.user-selector{
-  width:100%;background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,51,102,0.25);border-radius:12px;
-  padding:10px 14px;color:#fff;font-family:'Nunito',sans-serif;
-  font-size:13px;font-weight:700;outline:none;
-}
+.al-pin{width:100%;max-width:260px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,51,102,0.3);border-radius:14px;padding:14px;color:#fff;font-family:'Nunito',sans-serif;font-size:22px;text-align:center;outline:none;letter-spacing:10px;}
+.al-btn{background:linear-gradient(135deg,var(--danger),#990020);color:#fff;border:none;border-radius:14px;padding:14px 50px;font-family:'Bangers',cursive;font-size:22px;letter-spacing:2px;cursor:pointer;}
+.gc-card{margin:0 14px 14px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:14px;}
+.gc-inp{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,51,102,0.25);border-radius:12px;padding:12px 14px;color:#fff;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;outline:none;margin-bottom:10px;}
+.gc-btn{width:100%;background:linear-gradient(135deg,var(--danger),#990020);color:#fff;border:none;border-radius:12px;padding:12px;font-family:'Bangers',cursive;font-size:18px;letter-spacing:1px;cursor:pointer;}
+.user-selector-wrap{margin:0 0 10px;}
+.user-selector{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,51,102,0.25);border-radius:12px;padding:10px 14px;color:#fff;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;outline:none;}
 .user-selector option{background:#1a0533;}
-.ad-users-list{overflow-y:auto;max-height:200px;padding:0 14px;}
-.user-row{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:10px 14px;background:rgba(255,255,255,0.02);
-  border:1px solid rgba(255,255,255,0.06);border-radius:12px;margin-bottom:6px;
-}
+.ad-users-list{overflow-y:auto;padding:0 14px;}
+.user-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;margin-bottom:6px;}
 .user-row-info{font-size:12px;color:rgba(255,255,255,0.6);}
 .user-row-email{font-size:13px;font-weight:700;color:#fff;}
 .user-row-coins{font-family:'Bangers',cursive;font-size:16px;color:var(--primary);}
@@ -600,1368 +540,1212 @@ canvas{display:block;position:absolute;top:0;left:0;}
 .modal-box h3{font-family:'Bangers',cursive;font-size:22px;letter-spacing:1px;margin-bottom:8px;}
 .modal-box p{font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:20px;line-height:1.6;}
 .modal-acts{display:flex;gap:10px;}
-.modal-acts .mb1{
-  flex:1;background:linear-gradient(135deg,var(--primary),#FF6B00);
-  color:#000;border:none;border-radius:12px;padding:12px;
-  font-family:'Bangers',cursive;font-size:16px;letter-spacing:1px;cursor:pointer;
-}
-.modal-acts .mb2{
-  flex:1;background:rgba(255,255,255,0.07);color:#fff;
-  border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:12px;
-  font-weight:700;font-size:13px;cursor:pointer;
-}
+.modal-acts .mb1{flex:1;background:linear-gradient(135deg,var(--accent),#FF9900);color:#fff;border:none;border-radius:12px;padding:12px;font-family:'Bangers',cursive;font-size:16px;letter-spacing:1px;cursor:pointer;}
+.modal-acts .mb2{flex:1;background:rgba(255,255,255,0.07);color:#fff;border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:12px;font-weight:700;font-size:13px;cursor:pointer;}
 
 /* Leaderboard */
-.lb-item{
-  display:flex;align-items:center;gap:12px;
-  margin:0 14px 6px;padding:12px 14px;
-  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);
-  border-radius:14px;
-}
+.lb-item{display:flex;align-items:center;gap:12px;margin:0 14px 6px;padding:12px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;}
 .lb-rank{font-family:'Bangers',cursive;font-size:20px;color:rgba(255,255,255,0.3);width:30px;}
 .lb-rank.gold{color:#FFD700;}
 .lb-rank.silver{color:#C0C0C0;}
 .lb-rank.bronze{color:#CD7F32;}
 .lb-name{font-size:13px;font-weight:700;flex:1;}
 .lb-score{font-family:'Bangers',cursive;font-size:18px;color:var(--accent);}
+
+/* Pause button */
+#pauseBtn{
+  position:absolute;top:12px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.15);
+  color:#fff;border-radius:20px;padding:5px 16px;
+  font-size:11px;font-weight:700;cursor:pointer;
+  pointer-events:all;z-index:15;letter-spacing:1px;display:none;
+}
 </style>
-<script src='//libtl.com/sdk.js' data-zone='11069622'></script>
+
+<script src='//libtl.com/sdk.js' data-zone='11069622' data-sdk='show_11069622'></script>
+
 <!-- Firebase SDK -->
 <script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-  import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, query, orderBy, limit, getDocs, onSnapshot, where, serverTimestamp, addDoc, writeBatch } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, query, orderBy, limit, getDocs, onSnapshot, where, serverTimestamp, addDoc, writeBatch } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-  // ============================================================
-  //  FIREBASE CONFIG — Replace with YOUR Firebase project config
-  // ============================================================
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-
-  const firebaseConfig = {
-  apiKey: "AIzaSyC2TK1QPLbkaqNjjcp9_6TneS0Ft9GxveY",
-  authDomain: "metrorush-c366e.firebaseapp.com",
-  projectId: "metrorush-c366e",
-  storageBucket: "metrorush-c366e.firebasestorage.app",
-  messagingSenderId: "627812664572",
-  appId: "1:627812664572:web:613e4c719e3b4d39d34379",
+// ============================================================
+//  FIREBASE CONFIG — same as Metro Rush
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyCuVXQisf6e-lVone8ziE5ARMhm-0X8huc",
+  authDomain: "candycrush-6464a.firebaseapp.com",
+  projectId: "candycrush-6464a",
+  storageBucket: "candycrush-6464a.firebasestorage.app",
+  messagingSenderId: "608005418062",
+  appId: "1:608005418062:web:12fbc2ea548d5e6163a71f"
 };
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-  // ============================================================
-  //  GLOBAL STATE (synced with Firestore)
-  // ============================================================
-  let currentUser = null;
-  let S = getDefaultState();
-  let pendingWd = null;
+// ============================================================
+//  GLOBAL STATE
+// ============================================================
+let currentUser = null;
+let S = getDefaultState();
+let pendingWd = null;
 
-  function getDefaultState(){
-    return {
-      coins:0, totalCoins:0, bestScore:0, gamesPlayed:0,
-      totalWithdrawn:0, transactions:[], withdrawalRequests:[],
-      streak:1, lastPlayed:null, lastCheckin:null, boardUses:0, distanceM:0,
-      username:'Metro Runner'
-    };
-  }
+function getDefaultState(){
+  return {
+    coins:0, totalCoins:0, bestScore:0, gamesPlayed:0,
+    totalWithdrawn:0, transactions:[], withdrawalRequests:[],
+    streak:1, lastPlayed:null, lastCheckin:null,
+    level:1, totalLevelsCleared:0, distanceM:0,
+    username:'Candy Player'
+  };
+}
 
-  // ============================================================
-  //  AUTH STATE LISTENER
-  // ============================================================
-  // If Firebase doesn't respond within 8s, show a real connection error
-  let fbResolved = false;
-  const fbTimeout = setTimeout(() => {
-    if (!fbResolved) {
-      const el = document.getElementById('fbStatus');
-      if (el) {
-        el.textContent = '❌ Cannot reach Firebase';
-        el.className = 'offline';
-        el.style.display = 'block';
-      }
-    }
-  }, 8000);
-
-  onAuthStateChanged(auth, async (user) => {
-    fbResolved = true;
-    clearTimeout(fbTimeout);
-    if (user) {
-      currentUser = user;
-      await loadUserData(user.uid);
-      setFbStatus(true);
-      showAppAfterAuth();
-    } else {
-      currentUser = null;
-      S = getDefaultState();
-      setFbStatus(false);
-      showAuthScreen();
-    }
-  });
-
-  function setFbStatus(online){
+// ============================================================
+//  AUTH STATE LISTENER
+// ============================================================
+let fbResolved = false;
+const fbTimeout = setTimeout(() => {
+  if (!fbResolved) {
     const el = document.getElementById('fbStatus');
-    if(!el) return;
-    if(online){
-      el.textContent = '🔥 Firebase Live';
-      el.className = 'online';
-      el.style.display = 'block';
+    if (el) { el.textContent = '❌ Cannot reach Firebase'; el.className = 'offline'; el.style.display = 'block'; }
+  }
+}, 8000);
+
+onAuthStateChanged(auth, async (user) => {
+  fbResolved = true;
+  clearTimeout(fbTimeout);
+  if (user) {
+    currentUser = user;
+    await loadUserData(user.uid);
+    setFbStatus(true);
+    showAppAfterAuth();
+  } else {
+    currentUser = null;
+    S = getDefaultState();
+    setFbStatus(false);
+    showAuthScreen();
+  }
+});
+
+function setFbStatus(online){
+  const el = document.getElementById('fbStatus');
+  if(!el) return;
+  if(online){ el.textContent='🔥 Firebase Live'; el.className='online'; el.style.display='block'; }
+  else { el.style.display='none'; }
+}
+
+// ============================================================
+//  USER DATA
+// ============================================================
+async function loadUserData(uid){
+  try {
+    const ref = doc(db,'users',uid);
+    const snap = await getDoc(ref);
+    if(snap.exists()){
+      const data = snap.data();
+      S = { ...getDefaultState(), ...data };
+      await loadTransactions(uid);
     } else {
-      el.style.display = 'none';
-    }
-  }
-
-  // ============================================================
-  //  USER DATA
-  // ============================================================
-  async function loadUserData(uid){
-    try {
-      const ref = doc(db, 'users', uid);
-      const snap = await getDoc(ref);
-      if(snap.exists()){
-        const data = snap.data();
-        S = { ...getDefaultState(), ...data };
-        // transactions & withdrawalRequests come from subcollection
-        await loadTransactions(uid);
-      } else {
-        // New user — create doc
-        S = getDefaultState();
-        S.username = currentUser.email.split('@')[0];
-        await setDoc(ref, {
-          uid: uid,
-          email: currentUser.email,
-          username: S.username,
-          coins: 0, totalCoins: 0, bestScore: 0, gamesPlayed: 0,
-          totalWithdrawn: 0, streak: 1, lastPlayed: null,
-          boardUses: 0, distanceM: 0,
-          createdAt: serverTimestamp()
-        });
-      }
-    } catch(e){ console.warn('loadUserData error', e); }
-  }
-
-  async function loadTransactions(uid){
-    try {
-      const txRef = collection(db, 'users', uid, 'transactions');
-      const q = query(txRef, orderBy('timestamp', 'desc'), limit(30));
-      const snap = await getDocs(q);
-      S.transactions = snap.docs.map(d => ({id:d.id, ...d.data()}));
-    } catch(e){ console.warn('loadTx error', e); }
-  }
-
-  async function saveUserData(){
-    if(!currentUser) return;
-    try {
-      const ref = doc(db, 'users', currentUser.uid);
-      await updateDoc(ref, {
-        coins: S.coins, totalCoins: S.totalCoins,
-        bestScore: S.bestScore, gamesPlayed: S.gamesPlayed,
-        totalWithdrawn: S.totalWithdrawn, streak: S.streak,
-        lastPlayed: S.lastPlayed, boardUses: S.boardUses,
-        distanceM: S.distanceM, username: S.username,
-        updatedAt: serverTimestamp()
-      });
-    } catch(e){ console.warn('saveUserData error', e); }
-  }
-
-  // fallback local save so gameplay is never blocked
-  function save(){
-    saveUserData().catch(()=>{});
-    // also keep local backup
-    try{ localStorage.setItem('MR_fb_backup', JSON.stringify(S)); }catch(e){}
-  }
-
-  // ============================================================
-  //  AUTH FUNCTIONS (exposed globally)
-  // ============================================================
-  window.authRegister = async function(){
-    const email = document.getElementById('reg-email').value.trim();
-    const pass = document.getElementById('reg-pass').value;
-    const uname = document.getElementById('reg-name').value.trim() || 'Runner';
-    const errEl = document.getElementById('auth-err');
-    errEl.textContent='';
-    if(!email || !pass){ errEl.textContent='Enter email and password.'; return; }
-    if(pass.length < 6){ errEl.textContent='Password min 6 characters.'; return; }
-    showAuthSpinner(true);
-    try {
-      const cred = await createUserWithEmailAndPassword(auth, email, pass);
-      S.username = uname;
-      const ref = doc(db, 'users', cred.user.uid);
+      S = getDefaultState();
+      S.username = currentUser.email.split('@')[0];
       await setDoc(ref, {
-        uid: cred.user.uid, email,
-        username: uname,
+        uid, email:currentUser.email, username:S.username,
         coins:0, totalCoins:0, bestScore:0, gamesPlayed:0,
         totalWithdrawn:0, streak:1, lastPlayed:null,
-        boardUses:0, distanceM:0,
-        createdAt: serverTimestamp()
+        level:1, totalLevelsCleared:0, distanceM:0,
+        createdAt:serverTimestamp()
       });
-    } catch(e){
-      errEl.textContent = friendlyAuthError(e.code);
-      showAuthSpinner(false);
     }
-  };
+  } catch(e){ console.warn('loadUserData error',e); }
+}
 
-  window.authLogin = async function(){
-    const email = document.getElementById('login-email').value.trim();
-    const pass = document.getElementById('login-pass').value;
-    const errEl = document.getElementById('auth-err');
-    errEl.textContent='';
-    if(!email || !pass){ errEl.textContent='Enter email and password.'; return; }
-    showAuthSpinner(true);
-    try {
-      await signInWithEmailAndPassword(auth, email, pass);
-    } catch(e){
-      errEl.textContent = friendlyAuthError(e.code);
-      showAuthSpinner(false);
-    }
-  };
+async function loadTransactions(uid){
+  try {
+    const txRef = collection(db,'users',uid,'transactions');
+    const q = query(txRef, orderBy('timestamp','desc'), limit(30));
+    const snap = await getDocs(q);
+    S.transactions = snap.docs.map(d => ({id:d.id, ...d.data()}));
+  } catch(e){ console.warn('loadTx error',e); }
+}
 
-  window.authLogout = async function(){
-    await signOut(auth);
-  };
-
-  function friendlyAuthError(code){
-    if(code==='auth/email-already-in-use') return 'Email already registered.';
-    if(code==='auth/invalid-email') return 'Invalid email address.';
-    if(code==='auth/wrong-password' || code==='auth/invalid-credential') return 'Wrong email or password.';
-    if(code==='auth/user-not-found') return 'No account with that email.';
-    if(code==='auth/weak-password') return 'Password too weak.';
-    return 'Error: '+code;
-  }
-  function showAuthSpinner(v){
-    document.getElementById('auth-spinner').className = v ? 'auth-spinner show' : 'auth-spinner';
-  }
-
-  // ============================================================
-  //  SCREEN ROUTING
-  // ============================================================
-  function showAuthScreen(){
-    document.getElementById('authScreen').style.display='flex';
-    document.getElementById('homeScreen').classList.add('hidden');
-  }
-  function showAppAfterAuth(){
-    document.getElementById('authScreen').style.display='none';
-    document.getElementById('homeScreen').classList.remove('hidden');
-    document.getElementById('homeUserTag').textContent = `👤 ${S.username || currentUser.email}`;
-    updateCoinUI();
-    // Show admin elements ONLY for saifistate@gmail.com
-    const _isAdmin = currentUser && currentUser.email === 'saifistate@gmail.com';
-    document.querySelectorAll('.admin-only').forEach(function(el){
-      if(_isAdmin) el.classList.add('admin-visible');
-      else el.classList.remove('admin-visible');
+async function saveUserData(){
+  if(!currentUser) return;
+  try {
+    const ref = doc(db,'users',currentUser.uid);
+    await updateDoc(ref, {
+      coins:S.coins, totalCoins:S.totalCoins,
+      bestScore:S.bestScore, gamesPlayed:S.gamesPlayed,
+      totalWithdrawn:S.totalWithdrawn, streak:S.streak,
+      lastPlayed:S.lastPlayed, level:S.level,
+      totalLevelsCleared:S.totalLevelsCleared,
+      username:S.username, updatedAt:serverTimestamp()
     });
-    // Trigger daily check-in popup
-    setTimeout(checkDailyCheckIn, 800);
-    // Draw idle
-    running=false; initGame(); render(); running=false;
-  }
+  } catch(e){ console.warn('saveUserData error',e); }
+}
 
-  window.switchAuthTab = function(tab){
-    document.getElementById('tab-login').className = 'auth-tab'+(tab==='login'?' active':'');
-    document.getElementById('tab-reg').className = 'auth-tab'+(tab==='reg'?' active':'');
-    document.getElementById('loginForm').style.display = tab==='login'?'block':'none';
-    document.getElementById('regForm').style.display = tab==='reg'?'block':'none';
-    document.getElementById('auth-err').textContent='';
-  };
+function save(){
+  saveUserData().catch(()=>{});
+  try{ localStorage.setItem('CC_fb_backup', JSON.stringify(S)); }catch(e){}
+}
 
-  // ============================================================
-  //  GAME STATE
-  // ============================================================
-  const canvas = document.getElementById('c');
-  const ctx = canvas.getContext('2d');
-  ctx.imageSmoothingEnabled = true;
-  let W, H;
-  function resize(){
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-  }
-  resize();
-  window.addEventListener('resize', resize);
+// ============================================================
+//  AUTH FUNCTIONS
+// ============================================================
+window.authRegister = async function(){
+  const email = document.getElementById('reg-email').value.trim();
+  const pass  = document.getElementById('reg-pass').value;
+  const uname = document.getElementById('reg-name').value.trim() || 'Candy Player';
+  const errEl = document.getElementById('auth-err');
+  errEl.textContent='';
+  if(!email||!pass){ errEl.textContent='Enter email and password.'; return; }
+  if(pass.length<6){ errEl.textContent='Password min 6 characters.'; return; }
+  showAuthSpinner(true);
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    S.username = uname;
+    const ref = doc(db,'users',cred.user.uid);
+    await setDoc(ref, { uid:cred.user.uid, email, username:uname,
+      coins:0, totalCoins:0, bestScore:0, gamesPlayed:0,
+      totalWithdrawn:0, streak:1, lastPlayed:null, level:1, totalLevelsCleared:0,
+      createdAt:serverTimestamp()
+    });
+  } catch(e){ errEl.textContent=friendlyAuthError(e.code); showAuthSpinner(false); }
+};
 
-  const LANES = 3;
-  let running = false, paused = false, raf;
-  let score, distance;
-  let playerLane, playerY, groundY;
-  let jumping, rolling, jumpVY;
-  let lives, gameSpeed, frameN;
-  let currentMult, multTimer;
-  let magnet, magnetTimer;
-  let board, boardTimer;
-  let boost, boostTimer;
-  let obstacles, coins_g, powerups_g, particles;
-  let bgOffset, bgOffset2;
-  let totalCoinsThisRun;
-  let targetLane = 1;
+window.authLogin = async function(){
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('auth-err');
+  errEl.textContent='';
+  if(!email||!pass){ errEl.textContent='Enter email and password.'; return; }
+  showAuthSpinner(true);
+  try { await signInWithEmailAndPassword(auth, email, pass); }
+  catch(e){ errEl.textContent=friendlyAuthError(e.code); showAuthSpinner(false); }
+};
 
-  const VANISH_Y = 0.38;
-  const GROUND_Y_FRAC = 0.78;
-  const HORIZON_OFFSET = 0;
+window.authLogout = async function(){ await signOut(auth); };
 
-  function laneX(lane){ const spacing = W/3; return spacing*lane+spacing/2; }
-  function projectX(worldX,depth){ const vx=W/2+HORIZON_OFFSET; return vx+(worldX-vx)*depth; }
-  function projectY(depth){ const vy=H*VANISH_Y; const gy=H*GROUND_Y_FRAC; return vy+(gy-vy)*depth; }
-  function projectSize(sz,depth){ return sz*depth; }
-  const PLAYER_Z = 0.78;
+function friendlyAuthError(code){
+  if(code==='auth/email-already-in-use') return 'Email already registered.';
+  if(code==='auth/invalid-email') return 'Invalid email address.';
+  if(code==='auth/wrong-password'||code==='auth/invalid-credential') return 'Wrong email or password.';
+  if(code==='auth/user-not-found') return 'No account with that email.';
+  if(code==='auth/weak-password') return 'Password too weak.';
+  return 'Error: '+code;
+}
+function showAuthSpinner(v){ document.getElementById('auth-spinner').className = v?'auth-spinner show':'auth-spinner'; }
 
-  function initGame(){
-    running=true; paused=false;
-    score=0; distance=0; frameN=0; totalCoinsThisRun=0;
-    playerLane=1; targetLane=1;
-    groundY=H*GROUND_Y_FRAC; playerY=groundY;
-    jumping=false; rolling=false; jumpVY=0;
-    lives=3; gameSpeed=0.85;
-    currentMult=1; multTimer=0;
-    magnet=false; magnetTimer=0;
-    board=false; boardTimer=0;
-    boost=false; boostTimer=0;
-    obstacles=[]; coins_g=[]; powerups_g=[]; particles=[];
-    bgOffset=0; bgOffset2=0;
-    updateLivesUI();
-    document.getElementById('multBox').style.display='none';
-    document.getElementById('pb-magnet').classList.remove('active');
-    document.getElementById('pb-board').classList.remove('active');
-    document.getElementById('pb-boost').classList.remove('active');
-    updateCoinUI();
-  }
+// ============================================================
+//  SCREEN ROUTING
+// ============================================================
+function showAuthScreen(){
+  document.getElementById('authScreen').style.display='flex';
+  document.getElementById('homeScreen').classList.add('hidden');
+  document.getElementById('gameScreen').classList.remove('active');
+}
 
-  window.startGame = function(){
-    if(!currentUser){ showToast('Please login first!',true); return; }
-    document.getElementById('homeScreen').classList.add('hidden');
-    document.getElementById('gameoverScreen').classList.add('hidden');
-    document.getElementById('pauseScreen').classList.add('hidden');
-    document.getElementById('pauseBtn').style.display='block';
-    initGame();
-    if(raf) cancelAnimationFrame(raf);
-    loop();
-    const today=new Date().toDateString();
-    if(S.lastPlayed!==today){
-      const yest=new Date(Date.now()-86400000).toDateString();
-      S.streak=S.lastPlayed===yest?(S.streak||0)+1:1;
-      S.lastPlayed=today;
-      save();
-    }
-  };
-
-  async function endGame(){
-    running=false;
-    cancelAnimationFrame(raf);
-    const coinsEarned=Math.floor(score/80)+totalCoinsThisRun;
-    S.coins+=coinsEarned; S.totalCoins+=coinsEarned; S.gamesPlayed++;
-    if(score>S.bestScore) S.bestScore=score;
-    S.distanceM+=Math.floor(distance);
-    save();
-    // update leaderboard
-    await updateLeaderboard(score);
-    updateCoinUI();
-    document.getElementById('goScore').textContent=score.toLocaleString();
-    document.getElementById('goCoins').textContent=coinsEarned.toLocaleString();
-    const isBest=score>=S.bestScore;
-    document.getElementById('goBest').textContent=isBest?'🏆 New Best!':`Best: ${S.bestScore.toLocaleString()}`;
-    document.getElementById('pauseBtn').style.display='none';
-    document.getElementById('gameoverScreen').classList.remove('hidden');
-    checkAchs();
-    if(navigator.vibrate) navigator.vibrate([100,50,100]);
-    try{ show_11069622({type:'inApp',inAppSettings:{frequency:60,capping:0.1,interval:30,timeout:5,everyPage:false}}); }catch(e){}
-  }
-
-  async function updateLeaderboard(score){
-    if(!currentUser) return;
-    try {
-      const ref = doc(db, 'leaderboard', currentUser.uid);
-      const snap = await getDoc(ref);
-      if(!snap.exists() || snap.data().score < score){
-        await setDoc(ref, {
-          uid: currentUser.uid,
-          username: S.username || currentUser.email,
-          score, updatedAt: serverTimestamp()
-        });
-      }
-    } catch(e){ console.warn('leaderboard error', e); }
-  }
-
-  window.togglePause = function(){
-    if(!running) return;
-    paused=!paused;
-    document.getElementById('pauseBtn').textContent=paused?'▶ RESUME':'⏸ PAUSE';
-    if(paused){ document.getElementById('pauseScreen').classList.remove('hidden'); cancelAnimationFrame(raf); }
-    else { document.getElementById('pauseScreen').classList.add('hidden'); loop(); }
-  };
-  window.resumeGame=function(){ if(!paused) return; paused=false; document.getElementById('pauseBtn').textContent='⏸ PAUSE'; document.getElementById('pauseScreen').classList.add('hidden'); loop(); };
-  window.restartFromPause=function(){ document.getElementById('pauseScreen').classList.add('hidden'); startGame(); };
-  window.quitToHome=function(){ running=false; paused=false; cancelAnimationFrame(raf); document.getElementById('pauseScreen').classList.add('hidden'); document.getElementById('pauseBtn').style.display='none'; showHome(); };
-  window.showHome=function(){ document.getElementById('homeScreen').classList.remove('hidden'); document.getElementById('gameoverScreen').classList.add('hidden'); };
-
-  function loop(){
-    if(!running||paused) return;
-    raf=requestAnimationFrame(loop);
-    frameN++;
-    update(); render();
-  }
-
-  function update(){
-    gameSpeed=0.85+score/5800;
-    if(boost) gameSpeed*=1.7;
-    distance+=gameSpeed*0.05;
-    score+=boost?2:1;
-    if(frameN%100===0) score+=currentMult;
-    document.getElementById('scoreEl').textContent=Math.floor(score).toLocaleString();
-    if(multTimer>0){ multTimer--; if(multTimer<=0){ currentMult=1; document.getElementById('multBox').style.display='none'; } }
-    if(magnetTimer>0){ magnetTimer--; if(magnetTimer<=0){ magnet=false; document.getElementById('pb-magnet').classList.remove('active'); } }
-    if(boardTimer>0){ boardTimer--; if(boardTimer<=0){ board=false; document.getElementById('pb-board').classList.remove('active'); } }
-    if(boostTimer>0){ boostTimer--; if(boostTimer<=0){ boost=false; document.getElementById('pb-boost').classList.remove('active'); } }
-    if(magnetTimer>0) document.getElementById('pf-magnet').style.width=(magnetTimer/360*100)+'%';
-    if(boardTimer>0) document.getElementById('pf-board').style.width=(boardTimer/300*100)+'%';
-    if(boostTimer>0) document.getElementById('pf-boost').style.width=(boostTimer/200*100)+'%';
-    playerLane+=(targetLane-playerLane)*0.10;
-    if(Math.abs(playerLane-targetLane)<0.02) playerLane=targetLane;
-    if(jumping){ jumpVY+=0.65; playerY+=jumpVY; if(playerY>=groundY){ playerY=groundY; jumping=false; jumpVY=0; } }
-    bgOffset=(bgOffset+gameSpeed*3)%H;
-    bgOffset2=(bgOffset2+gameSpeed*1.5)%H;
-    const spawnRate=Math.max(70,140-score/85);
-    if(frameN%Math.floor(spawnRate)===0){
-      const types=['train','barrier','cone','car'];
-      const t=types[Math.floor(Math.random()*types.length)];
-      const lane=Math.floor(Math.random()*3);
-      obstacles.push({lane,z:0,type:t,hit:false});
-      if(Math.random()<0.3&&score>500){ const l2=(lane+1+Math.floor(Math.random()*2))%3; obstacles.push({lane:l2,z:0,type:t,hit:false}); }
-    }
-    if(frameN%18===0){
-      const l=Math.floor(Math.random()*3);
-      if(Math.random()<0.4){ for(let i=0;i<3;i++) coins_g.push({lane:i,z:0,collected:false,high:Math.random()<0.3}); }
-      else coins_g.push({lane:l,z:0,collected:false,high:Math.random()<0.3});
-    }
-    if(frameN%280===0){
-      const types=['magnet','board','boost','x2','x3'];
-      powerups_g.push({lane:Math.floor(Math.random()*3),z:0,type:types[Math.floor(Math.random()*types.length)]});
-    }
-    const speed=gameSpeed*0.015;
-    for(let i=obstacles.length-1;i>=0;i--){
-      obstacles[i].z+=speed;
-      if(obstacles[i].z>1.1){ obstacles.splice(i,1); continue; }
-      if(!obstacles[i].hit){
-        const oz=obstacles[i].z;
-        if(Math.abs(oz-PLAYER_Z)<0.035&&obstacles[i].lane===Math.round(playerLane)){
-          if(!board){ lives--; updateLivesUI(); triggerHit(); if(lives<=0){ endGame(); return; } }
-          else { board=false; boardTimer=0; document.getElementById('pb-board').classList.remove('active'); showToast('🛹 Board saved you!',false); }
-          obstacles[i].hit=true;
-          spawnParticles(projectX(laneX(obstacles[i].lane),PLAYER_Z),groundY-20,'#FF3366',12);
-        }
-      }
-    }
-    for(let i=coins_g.length-1;i>=0;i--){
-      coins_g[i].z+=speed;
-      if(coins_g[i].z>1.1){ coins_g.splice(i,1); continue; }
-      if(!coins_g[i].collected){
-        const cz=coins_g[i].z;
-        const dist=Math.abs(cz-PLAYER_Z);
-        const magnetRange=magnet?0.15:0.04;
-        if(dist<magnetRange&&(magnet||coins_g[i].lane===Math.round(playerLane))){
-          if(magnet&&dist<0.15) coins_g[i].lane=Math.round(playerLane);
-          if(Math.abs(cz-PLAYER_Z)<0.05&&coins_g[i].lane===Math.round(playerLane)){
-            coins_g[i].collected=true;
-            const val=currentMult*(coins_g[i].high?5:1);
-            totalCoinsThisRun+=val;
-            S.coins+=val; S.totalCoins+=val; save();
-            updateCoinUI();
-            popCoin(projectX(laneX(coins_g[i].lane),PLAYER_Z),projectY(PLAYER_Z)-20,val);
-            spawnParticles(projectX(laneX(coins_g[i].lane),PLAYER_Z),projectY(PLAYER_Z)-10,'#FFD700',5);
-          }
-        }
-      }
-    }
-    for(let i=powerups_g.length-1;i>=0;i--){
-      powerups_g[i].z+=speed;
-      if(powerups_g[i].z>1.1){ powerups_g.splice(i,1); continue; }
-      const pz=powerups_g[i].z;
-      if(Math.abs(pz-PLAYER_Z)<0.05&&powerups_g[i].lane===Math.round(playerLane)){
-        applyPowerup(powerups_g[i].type);
-        spawnParticles(projectX(laneX(powerups_g[i].lane),PLAYER_Z),projectY(PLAYER_Z)-20,'#00E5FF',15);
-        powerups_g.splice(i,1); continue;
-      }
-    }
-    for(let i=particles.length-1;i>=0;i--){
-      const p=particles[i];
-      p.x+=p.vx; p.y+=p.vy; p.vy+=0.15; p.life--;
-      if(p.life<=0) particles.splice(i,1);
-    }
-  }
-
-  function applyPowerup(type){
-    if(type==='magnet'){ magnet=true; magnetTimer=360; document.getElementById('pb-magnet').classList.add('active'); showToast('🧲 Magnet activated!',false); }
-    else if(type==='board'){ board=true; boardTimer=300; document.getElementById('pb-board').classList.add('active'); S.boardUses++; save(); showToast('🛹 Hoverboard!',false); }
-    else if(type==='boost'){ boost=true; boostTimer=200; document.getElementById('pb-boost').classList.add('active'); showToast('⚡ Speed Boost!',false); }
-    else if(type==='x2'){ currentMult=2; multTimer=300; document.getElementById('multEl').textContent='x2'; document.getElementById('multBox').style.display='block'; showPopMult('x2!'); }
-    else if(type==='x3'){ currentMult=3; multTimer=300; document.getElementById('multEl').textContent='x3'; document.getElementById('multBox').style.display='block'; showPopMult('x3!'); }
-  }
-
-  let hitFlashTimer=0;
-  function triggerHit(){ hitFlashTimer=12; document.getElementById('hitFlash').style.opacity='1'; if(navigator.vibrate) navigator.vibrate(150); }
-  function updateLivesUI(){ document.getElementById('livesBar').textContent='❤️'.repeat(lives)+'🖤'.repeat(Math.max(0,3-lives)); }
-  function updateCoinUI(){ document.getElementById('coinEl').textContent=S.coins.toLocaleString(); }
-
-  window.showRewardAd=function(){
-    const reward=Math.max(50,Math.floor(score/8));
-    const overlay=document.createElement('div');
-    overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;color:#fff;';
-    overlay.innerHTML=`<div style="font-size:60px;">📺</div><h1>Reward Ad</h1><p>Watch ad to claim ${reward} coins</p><div id="adCounter" style="font-size:42px;margin-top:10px;">5</div>`;
-    document.body.appendChild(overlay);
-    let sec=5;
-    const timer=setInterval(()=>{
-      sec--; document.getElementById('adCounter').textContent=sec;
-      if(sec<=0){
-        clearInterval(timer); S.coins+=reward; S.totalCoins+=reward;
-        save(); updateCoinUI(); overlay.remove(); showToast(`🎉 ${reward} coins added!`,false);
-      }
-    },1000);
-  };
-
-  // ============================================================
-  //  RENDER (unchanged from original)
-  // ============================================================
-  function render(){
-    ctx.clearRect(0,0,W,H);
-    const sky=ctx.createLinearGradient(0,0,0,H*VANISH_Y*1.5);
-    sky.addColorStop(0,'#0d0020'); sky.addColorStop(0.5,'#1a0533'); sky.addColorStop(1,'#2d0545');
-    ctx.fillStyle=sky; ctx.fillRect(0,0,W,H);
-    ctx.save();
-    const grd=ctx.createRadialGradient(W*0.75,H*0.1,0,W*0.75,H*0.1,H*0.3);
-    grd.addColorStop(0,'rgba(255,150,0,0.15)'); grd.addColorStop(1,'transparent');
-    ctx.fillStyle=grd; ctx.fillRect(0,0,W,H); ctx.restore();
-    ctx.save();
-    for(let s=0;s<40;s++){
-      const sx=((s*137.5+frameN*0.02)%W);
-      const sy=((s*73.1)%(H*VANISH_Y));
-      const sa=0.4+0.6*Math.sin(frameN*0.05+s);
-      ctx.globalAlpha=sa*0.8; ctx.fillStyle='#fff'; ctx.fillRect(sx,sy,1,1);
-    }
-    ctx.restore();
-    drawBuildings(); drawTrack();
-    const gy=H*GROUND_Y_FRAC;
-    const groundGrad=ctx.createLinearGradient(0,gy,0,H);
-    groundGrad.addColorStop(0,'#3d1a6e'); groundGrad.addColorStop(1,'#1a0533');
-    ctx.fillStyle=groundGrad; ctx.fillRect(0,gy,W,H-gy);
-    const all=[...obstacles.map(o=>({...o,cat:'obs'})),...coins_g.filter(c=>!c.collected).map(c=>({...c,cat:'coin'})),...powerups_g.map(p=>({...p,cat:'pu'}))].sort((a,b)=>a.z-b.z);
-    for(const obj of all){
-      if(obj.z<0.05) continue;
-      const wx=laneX(obj.lane); const px=projectX(wx,obj.z); const py=projectY(obj.z); const scale=obj.z;
-      if(obj.cat==='obs') drawObstacle(obj,px,py,scale);
-      else if(obj.cat==='coin') drawCoin(obj,px,py,scale);
-      else if(obj.cat==='pu') drawPowerup(obj,px,py,scale);
-    }
-    const plx=projectX(laneX(playerLane),PLAYER_Z); const ply=groundY;
-    ctx.save(); ctx.globalAlpha=0.3; ctx.fillStyle='#000';
-    ctx.beginPath(); ctx.ellipse(plx,ply+4,22*PLAYER_Z,6*PLAYER_Z,0,0,Math.PI*2); ctx.fill(); ctx.restore();
-    drawPlayer(plx,playerY,PLAYER_Z);
-    for(const p of particles){
-      ctx.save(); ctx.globalAlpha=p.life/p.maxLife; ctx.fillStyle=p.color;
-      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); ctx.restore();
-    }
-    if(board){
-      ctx.save(); ctx.globalAlpha=0.15+0.1*Math.sin(frameN*0.2);
-      const bg=ctx.createRadialGradient(plx,ply,0,plx,ply,60);
-      bg.addColorStop(0,'#FFD700'); bg.addColorStop(1,'transparent');
-      ctx.fillStyle=bg; ctx.fillRect(plx-80,ply-80,160,160); ctx.restore();
-    }
-    if(hitFlashTimer>0){
-      hitFlashTimer--;
-      const alpha=hitFlashTimer/12*0.4;
-      ctx.save(); ctx.globalAlpha=alpha; ctx.fillStyle='#ff0000'; ctx.fillRect(0,0,W,H); ctx.restore();
-      if(hitFlashTimer<=0) document.getElementById('hitFlash').style.opacity='0';
-    }
-    if(boost){
-      ctx.save(); ctx.globalAlpha=0.3;
-      for(let i=0;i<8;i++){
-        const lx=Math.random()*W;
-        ctx.strokeStyle='#00E5FF'; ctx.lineWidth=1;
-        ctx.beginPath(); ctx.moveTo(lx,0); ctx.lineTo(lx-10,H); ctx.stroke();
-      }
-      ctx.restore();
-    }
-  }
-
-  function drawBuildings(){
-    const vh=H*VANISH_Y; ctx.save();
-    for(let b=0;b<8;b++){
-      const bw=30+b*12; const bh=40+b*20;
-      const bx=(b*137+bgOffset2*0.05)%(W+bw)-bw;
-      ctx.fillStyle=`rgba(${30+b*5},${10+b*3},${50+b*5},0.8)`;
-      ctx.fillRect(bx,vh-bh,bw,bh);
-      ctx.fillStyle='rgba(255,200,0,0.15)';
-      for(let wy=0;wy<bh-5;wy+=10){
-        for(let wx2=2;wx2<bw-2;wx2+=8){
-          if(Math.random()<0.4) ctx.fillRect(bx+wx2,vh-bh+wy+2,4,5);
-        }
-      }
-    }
-    ctx.restore();
-  }
-  function drawTrack(){
-    const vy=H*VANISH_Y; const gy=H*GROUND_Y_FRAC; const vx=W/2;
-    ctx.save(); ctx.beginPath();
-    ctx.moveTo(vx-20,vy); ctx.lineTo(0,gy); ctx.lineTo(W,gy); ctx.lineTo(vx+20,vy); ctx.closePath();
-    const tg=ctx.createLinearGradient(0,vy,0,gy);
-    tg.addColorStop(0,'#2d1b69'); tg.addColorStop(0.5,'#1a0f4a'); tg.addColorStop(1,'#3d1a6e');
-    ctx.fillStyle=tg; ctx.fill(); ctx.restore();
-    for(let l=0;l<4;l++){
-      const wx=laneX(l)-W/6; const gx=projectX(wx-W/6*0,1); const tx=projectX(wx-W/6*0,0.01);
-      ctx.save(); ctx.strokeStyle='rgba(0,229,255,0.2)'; ctx.lineWidth=1; ctx.setLineDash([8,6]);
-      ctx.beginPath(); ctx.moveTo(tx,vy); ctx.lineTo(gx,gy); ctx.stroke(); ctx.restore();
-    }
-    for(let r=0;r<2;r++){
-      const rOff=(r===0?-1:1)*W/4.5;
-      ctx.save(); ctx.strokeStyle='rgba(100,100,200,0.5)'; ctx.lineWidth=2.5; ctx.setLineDash([]);
-      ctx.beginPath(); ctx.moveTo(vx+rOff*0.05,vy); ctx.lineTo(vx+rOff,gy); ctx.stroke(); ctx.restore();
-    }
-    for(let t=0;t<12;t++){
-      const depth=(t/12+(bgOffset*0.003))%1;
-      const ty=vy+(gy-vy)*depth; const tw=(W*0.6)*depth;
-      ctx.save(); ctx.globalAlpha=depth*0.5; ctx.fillStyle='#3d2a8e';
-      ctx.fillRect(vx-tw/2,ty-3*depth,tw,5*depth); ctx.restore();
-    }
-    ctx.save(); ctx.strokeStyle='rgba(255,107,0,0.4)'; ctx.lineWidth=3;
-    ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(W,gy); ctx.stroke(); ctx.restore();
-  }
-  function drawPlayer(px,py,scale){
-    const h=70*scale; ctx.save(); ctx.translate(px,py);
-    if(rolling){ ctx.font=`${h*0.7}px serif`; ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.fillText('🏎️',0,0); }
-    else if(jumping&&playerY<groundY-10){ ctx.font=`${h}px serif`; ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.fillText('🚘',0,0); }
-    else { ctx.font=`${h}px serif`; ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.fillText('🏎️',0,0); }
-    if(board){ ctx.font=`${h*0.4}px serif`; ctx.textAlign='center'; ctx.textBaseline='top'; ctx.fillText('🛹',0,-4); }
-    ctx.restore();
-  }
-  function drawObstacle(obj,px,py,scale){
-    if(obj.hit) return;
-    const emojis={train:'🚇',barrier:'🚧',cone:'🚦',car:'🚕'};
-    const sizes={train:70,barrier:55,cone:50,car:65};
-    const sz=(sizes[obj.type]||55)*scale;
-    ctx.save(); ctx.font=`${sz}px serif`; ctx.textAlign='center'; ctx.textBaseline='bottom';
-    ctx.translate(px,py); ctx.fillText(emojis[obj.type]||'🚧',0,0); ctx.restore();
-  }
-  function drawCoin(obj,px,py,scale){
-    const sz=(obj.high?28:22)*scale;
-    const bob=Math.sin(frameN*0.1+obj.lane)*5*scale;
-    ctx.save(); ctx.translate(px,py-30*scale+bob);
-    ctx.font=`${sz}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(obj.high?'💎':'🪙',0,0); ctx.restore();
-  }
-  function drawPowerup(obj,px,py,scale){
-    const icons={magnet:'🧲',board:'🛹',boost:'⚡',x2:'🔥',x3:'💥'};
-    const sz=32*scale; const glow=Math.sin(frameN*0.1)*0.3+0.7;
-    ctx.save(); ctx.globalAlpha=glow; ctx.translate(px,py-35*scale);
-    ctx.font=`${sz}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(icons[obj.type]||'⭐',0,0);
-    ctx.globalAlpha=0.2*glow; ctx.strokeStyle='#00E5FF'; ctx.lineWidth=2*scale;
-    ctx.beginPath(); ctx.arc(0,0,sz*0.7,0,Math.PI*2); ctx.stroke(); ctx.restore();
-  }
-  function spawnParticles(x,y,color,count){
-    for(let i=0;i<count;i++){
-      const angle=Math.random()*Math.PI*2; const spd=2+Math.random()*4;
-      particles.push({x,y,color,vx:Math.cos(angle)*spd,vy:Math.sin(angle)*spd-2,r:2+Math.random()*3,life:20+Math.floor(Math.random()*15),maxLife:35});
-    }
-  }
-  function popCoin(x,y,val){
-    const el=document.createElement('div'); el.className='coin-pop';
-    el.textContent=val>1?`+${val}🪙`:'🪙'; el.style.left=x+'px'; el.style.top=y+'px';
-    el.style.setProperty('--dx',(Math.random()*30-15)+'px'); el.style.setProperty('--dy','0px');
-    document.body.appendChild(el); setTimeout(()=>el.remove(),750);
-  }
-  function showPopMult(txt){
-    const el=document.createElement('div'); el.className='mult-pop'; el.textContent=txt;
-    el.style.left=(W/2-30)+'px'; el.style.top=(H*0.4)+'px';
-    document.body.appendChild(el); setTimeout(()=>el.remove(),850);
-  }
-
-  // Touch
-  let tx0,ty0,tTime;
-  document.addEventListener('touchstart',e=>{ tx0=e.touches[0].clientX; ty0=e.touches[0].clientY; tTime=Date.now(); },{passive:true});
-  document.addEventListener('touchend',e=>{
-    if(!running||paused) return;
-    const dx=e.changedTouches[0].clientX-tx0; const dy=e.changedTouches[0].clientY-ty0; const dt=Date.now()-tTime; const fast=dt<250;
-    if(Math.abs(dx)>Math.abs(dy)){ if(Math.abs(dx)>30){ if(dx>0&&targetLane<2) targetLane++; else if(dx<0&&targetLane>0) targetLane--; } }
-    else { if(dy<-40&&fast&&!jumping&&!rolling){ jumping=true; jumpVY=-18; } else if(dy>40&&fast&&!jumping){ rolling=true; setTimeout(()=>rolling=false,500); } }
-  },{passive:true});
-  document.addEventListener('keydown',e=>{
-    if(!running||paused) return;
-    if(e.key==='ArrowLeft'&&targetLane>0) targetLane--;
-    if(e.key==='ArrowRight'&&targetLane<2) targetLane++;
-    if((e.key==='ArrowUp'||e.key===' ')&&!jumping){ jumping=true; jumpVY=-18; }
-    if(e.key==='ArrowDown'&&!jumping){ rolling=true; setTimeout(()=>rolling=false,500); }
+function showAppAfterAuth(){
+  document.getElementById('authScreen').style.display='none';
+  document.getElementById('homeScreen').classList.remove('hidden');
+  document.getElementById('homeUserTag').textContent = `👤 ${S.username || currentUser.email}`;
+  updateCoinUI();
+  const _isAdmin = currentUser && currentUser.email === 'saifistate@gmail.com';
+  document.querySelectorAll('.admin-only').forEach(el => {
+    if(_isAdmin) el.classList.add('admin-visible');
+    else el.classList.remove('admin-visible');
   });
+  setTimeout(checkDailyCheckIn, 800);
+}
 
-  // ============================================================
-  //  WALLET
-  // ============================================================
-  window.openWallet=function(){ document.getElementById('walletView').classList.add('open'); updateWalletUI(); };
-  window.closeWallet=function(){ document.getElementById('walletView').classList.remove('open'); };
-  function updateWalletUI(){
-    const bal=(S.coins/100).toFixed(2);
-    document.getElementById('wv-bal').textContent=bal;
-    document.getElementById('wv-coins').textContent=S.coins.toLocaleString();
-    renderTx();
-  }
-  window.updateWdPreview=function(){
-    const c=parseInt(document.getElementById('wd-coins').value)||0;
-    document.getElementById('wd-preview').textContent='₹'+(c/100).toFixed(2);
+window.switchAuthTab = function(tab){
+  document.getElementById('tab-login').className = 'auth-tab'+(tab==='login'?' active':'');
+  document.getElementById('tab-reg').className   = 'auth-tab'+(tab==='reg'?' active':'');
+  document.getElementById('loginForm').style.display = tab==='login'?'block':'none';
+  document.getElementById('regForm').style.display   = tab==='reg'?'block':'none';
+  document.getElementById('auth-err').textContent='';
+};
+
+// ============================================================
+//  ====  CANDY CRUSH GAME ENGINE  ====
+// ============================================================
+const COLS = 8, ROWS = 8;
+const CANDY_TYPES = 6;
+const CANDY_EMOJIS = ['🍓','🍊','🍋','🍏','🫐','🍇']; // red,orange,yellow,green,blue,purple
+
+let board = [];           // 2D array of {type, special}
+let selectedCell = null;  // {row,col}
+let score = 0;
+let moves = 0;
+let levelScore = 0;
+let currentLevel = 1;
+let levelTarget = 500;
+let gameActive = false;
+let animating = false;
+let totalCoinsThisGame = 0;
+let hintTimeout = null;
+
+// Level config
+function getLevelConfig(lvl){
+  return {
+    target: 300 + lvl * 200,
+    moves:  Math.max(10, 30 - Math.floor(lvl / 2)),
+    name:   `Level ${lvl}`
   };
-  window.submitWithdrawal=async function(){
-    const coins=parseInt(document.getElementById('wd-coins').value)||0;
-    const method=document.getElementById('wd-method').value;
-    const acc=document.getElementById('wd-acc').value.trim();
-    const name=document.getElementById('wd-name').value.trim();
-    if(coins<5000){ showToast('Minimum 5000 coins!',true); return; }
-    if(coins>S.coins){ showToast('Not enough coins!',true); return; }
-    if(!acc){ showToast('Enter account number!',true); return; }
-    if(!name){ showToast('Enter account name!',true); return; }
-    const rupees=(coins/100).toFixed(2);
-    document.getElementById('m-body').textContent=`Withdraw ${coins.toLocaleString()} coins for ₹${rupees} via ${method.toUpperCase()} to ${acc}?`;
-    pendingWd={coins,method,acc,name,rupees};
-    document.getElementById('modal').classList.add('open');
-  };
-  window.closeModal=function(){ document.getElementById('modal').classList.remove('open'); pendingWd=null; };
-  window.confirmWd=async function(){
-    if(!pendingWd||!currentUser) return;
-    const {coins,method,acc,name,rupees}=pendingWd;
-    S.coins-=coins;
-    const txData={
-      uid:currentUser.uid, email:currentUser.email,
-      username:S.username||'Player',
-      coins, rupees, method, acc, name,
-      status:'pending',
-      date:new Date().toLocaleDateString('en-PK',{day:'2-digit',month:'short',year:'numeric'}),
-      timestamp:Date.now(), createdAt:serverTimestamp()
-    };
-    try {
-      // Add to user's transactions subcollection
-      const txRef=await addDoc(collection(db,'users',currentUser.uid,'transactions'),txData);
-      // Also add to global withdrawalRequests collection for admin
-      await addDoc(collection(db,'withdrawalRequests'),{...txData, userDocId:currentUser.uid, txId:txRef.id});
-      S.transactions=[{id:txRef.id,...txData},...(S.transactions||[])];
-    } catch(e){ console.warn('tx error',e); }
-    save();
-    closeModal();
-    updateCoinUI(); updateWalletUI();
-    document.getElementById('wd-coins').value='';
-    document.getElementById('wd-acc').value='';
-    document.getElementById('wd-name').value='';
-    document.getElementById('wd-preview').textContent='₹0.00';
-    showToast('✅ Withdrawal request submitted!',false);
-    checkAchs();
-  };
-  function renderTx(){
-    const el=document.getElementById('txList');
-    if(!S.transactions||!S.transactions.length){ el.innerHTML='<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.3);font-size:13px;">No transactions yet</div>'; return; }
-    el.innerHTML=S.transactions.map(tx=>`
-      <div class="tx-item">
-        <div class="tx-ico">💸</div>
-        <div style="flex:1;">
-          <div class="tx-nm">${(tx.method||'').toUpperCase()} · ${tx.acc||''}</div>
-          <div class="tx-dt">${tx.date}</div>
-        </div>
-        <div style="text-align:right;">
-          <div class="tx-amt">-₹${tx.rupees}</div>
-          <div class="tx-st ${tx.status}">${(tx.status||'pending').toUpperCase()}</div>
-        </div>
-      </div>`).join('');
-  }
+}
 
-  // Real-time listener: update user's tx status when admin changes it
-  function listenToUserTransactions(){
-    if(!currentUser) return;
-    const txRef=collection(db,'users',currentUser.uid,'transactions');
-    onSnapshot(txRef,(snap)=>{
-      S.transactions=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.timestamp-a.timestamp);
-      renderTx();
-    });
-  }
-
-  // ============================================================
-  //  PROFILE
-  // ============================================================
-  window.openProfile=function(){
-    document.getElementById('profileView').classList.add('open');
-    document.getElementById('ps-best').textContent=S.bestScore.toLocaleString();
-    document.getElementById('ps-coins').textContent=S.totalCoins.toLocaleString();
-    document.getElementById('ps-games').textContent=S.gamesPlayed;
-    document.getElementById('ps-wd').textContent='₹'+(S.totalWithdrawn||0).toFixed(2);
-    document.getElementById('ps-streak').textContent=S.streak||1;
-    document.getElementById('ps-dist').textContent=Math.floor(S.distanceM||0)+'m';
-    document.getElementById('pv-lvl').textContent=Math.floor((S.totalCoins||0)/500)+1;
-    document.getElementById('pv-name').textContent=S.username||'Metro Runner';
-    document.getElementById('pv-uid').textContent=currentUser?currentUser.email:'';
-    checkAchs();
-    loadLeaderboard();
-  };
-  window.closeProfile=function(){ document.getElementById('profileView').classList.remove('open'); };
-
-  async function loadLeaderboard(){
-    try {
-      const q=query(collection(db,'leaderboard'),orderBy('score','desc'),limit(10));
-      const snap=await getDocs(q);
-      const rankClasses=['gold','silver','bronze'];
-      const items=snap.docs.map((d,i)=>{
-        const data=d.data();
-        const medal=i<3?rankClasses[i]:'';
-        const isSelf=currentUser&&d.id===currentUser.uid;
-        return `<div class="lb-item" style="${isSelf?'border-color:rgba(255,215,0,0.3);background:rgba(255,215,0,0.05);':''}">
-          <div class="lb-rank ${medal}">#${i+1}</div>
-          <div class="lb-name">${data.username||'Player'}${isSelf?' (You)':''}</div>
-          <div class="lb-score">${(data.score||0).toLocaleString()}</div>
-        </div>`;
-      }).join('');
-      const lbEl=document.getElementById('leaderboardList');
-      if(lbEl) lbEl.innerHTML=items||'<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">No scores yet</div>';
-    } catch(e){ console.warn('leaderboard load error',e); }
-  }
-
-  function checkAchs(){
-    if(S.gamesPlayed>=1) setAch('a1','✅ Done');
-    if(S.totalCoins>=1000) setAch('a2','✅ Done');
-    if(S.bestScore>=5000) setAch('a3','✅ Done');
-    if(S.transactions&&S.transactions.length>=1) setAch('a4','✅ Done');
-    if((S.boardUses||0)>=5) setAch('a5','✅ Done');
-  }
-  function setAch(id,txt){ const el=document.getElementById(id); if(el){ el.textContent=txt; el.classList.add('done'); } }
-
-  // ============================================================
-  //  ADMIN PANEL
-  // ============================================================
-  let isAdminAuth=false;
-  let adminUsersCache=[];
-  const pendingWrData={};
-  let pendingWrUnsubscribe=null;
-
-  function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function adminLoading(el,msg){ if(el) el.innerHTML=`<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.4);font-size:13px;">⏳ ${msg||'Loading...'}</div>`; }
-  function adminError(el,msg){ if(el) el.innerHTML=`<div style="text-align:center;padding:14px;color:#FF6B00;font-size:12px;border:1px solid rgba(255,107,0,0.3);border-radius:10px;margin:0 14px;">⚠️ ${escHtml(msg)}</div>`; }
-
-  window.openAdminLogin=function(){
-    if(!currentUser || currentUser.email !== 'saifistate@gmail.com'){
-      showToast('Access denied.',true); return;
+function initBoard(){
+  board = [];
+  for(let r=0;r<ROWS;r++){
+    board[r] = [];
+    for(let c=0;c<COLS;c++){
+      board[r][c] = { type: randomType(), special: null };
     }
-    document.getElementById('adminView').classList.add('open');
-    document.getElementById('aLoginWrap').style.display='none';
-    document.getElementById('aDashWrap').style.display='flex';
-    isAdminAuth=true;
-    loadAdminDash();
+  }
+  // Clear initial matches
+  for(let i=0;i<10;i++){
+    const matches = findAllMatches();
+    if(!matches.length) break;
+    matches.forEach(({row,col}) => { board[row][col].type = randomType(); });
+  }
+}
+
+function randomType(){ return Math.floor(Math.random() * CANDY_TYPES); }
+
+function renderBoard(){
+  const grid = document.getElementById('candyBoard');
+  if(!grid) return;
+  // Calculate cell size based on screen
+  const vw = Math.min(window.innerWidth, 480);
+  const cellSize = Math.floor((vw - 48) / COLS);
+  grid.style.gridTemplateColumns = `repeat(${COLS}, ${cellSize}px)`;
+  grid.innerHTML = '';
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const cell = document.createElement('div');
+      cell.className = `candy-cell c${board[r][c].type}`;
+      if(board[r][c].special) cell.classList.add(board[r][c].special);
+      cell.style.width = cell.style.height = cellSize+'px';
+      cell.style.fontSize = Math.floor(cellSize * 0.54)+'px';
+      cell.dataset.row = r; cell.dataset.col = c;
+      cell.textContent = CANDY_EMOJIS[board[r][c].type];
+      cell.addEventListener('click', onCellClick);
+      // Touch swipe support
+      cell.addEventListener('touchstart', onTouchStart, {passive:true});
+      cell.addEventListener('touchend', onTouchEnd, {passive:true});
+      if(selectedCell && selectedCell.row===r && selectedCell.col===c) cell.classList.add('selected');
+      grid.appendChild(cell);
+    }
+  }
+}
+
+// ── Touch swipe ──────────────────────────────────────────────
+let touchStartX=0, touchStartY=0, touchStartRow=-1, touchStartCol=-1;
+function onTouchStart(e){
+  const t=e.touches[0];
+  touchStartX=t.clientX; touchStartY=t.clientY;
+  touchStartRow=+e.currentTarget.dataset.row;
+  touchStartCol=+e.currentTarget.dataset.col;
+}
+function onTouchEnd(e){
+  const t=e.changedTouches[0];
+  const dx=t.clientX-touchStartX, dy=t.clientY-touchStartY;
+  const threshold=20;
+  if(Math.abs(dx)<threshold && Math.abs(dy)<threshold) return; // tap — handled by click
+  let tr=touchStartRow, tc=touchStartCol;
+  if(Math.abs(dx)>Math.abs(dy)){
+    tc += dx>0 ? 1 : -1;
+  } else {
+    tr += dy>0 ? 1 : -1;
+  }
+  if(tr>=0&&tr<ROWS&&tc>=0&&tc<COLS){
+    selectedCell = {row:touchStartRow,col:touchStartCol};
+    trySwap(tr,tc);
+  }
+}
+
+function onCellClick(e){
+  if(animating || !gameActive) return;
+  const r=+e.currentTarget.dataset.row, c=+e.currentTarget.dataset.col;
+  if(!selectedCell){
+    selectedCell={row:r,col:c};
+    renderBoard();
+    clearTimeout(hintTimeout);
+    hintTimeout = setTimeout(showHint, 3000);
+    return;
+  }
+  if(selectedCell.row===r && selectedCell.col===c){
+    selectedCell=null; renderBoard(); return;
+  }
+  trySwap(r,c);
+}
+
+function trySwap(r,c){
+  if(!selectedCell) return;
+  const r1=selectedCell.row, c1=selectedCell.col;
+  const dr=Math.abs(r-r1), dc=Math.abs(c-c1);
+  if(dr+dc!==1){ selectedCell={row:r,col:c}; renderBoard(); return; }
+  selectedCell=null;
+  if(moves<=0){ showToast('No moves left!',true); return; }
+  // Swap
+  const tmp={...board[r1][c1]};
+  board[r1][c1]={...board[r][c]};
+  board[r][c]=tmp;
+  const matches=findAllMatches();
+  if(matches.length===0){
+    // Swap back
+    const tmp2={...board[r1][c1]};
+    board[r1][c1]={...board[r][c]};
+    board[r][c]=tmp2;
+    renderBoard();
+    shakeCell(r1,c1);
+    showToast('No match!',true);
+    return;
+  }
+  moves--;
+  updateHUD();
+  processMatches(matches);
+}
+
+function shakeCell(r,c){
+  const cell=getCellEl(r,c);
+  if(!cell) return;
+  cell.style.transition='transform 0.08s';
+  cell.style.transform='translateX(-6px)';
+  setTimeout(()=>{ cell.style.transform='translateX(6px)'; },80);
+  setTimeout(()=>{ cell.style.transform='translateX(0)'; },160);
+}
+
+function getCellEl(r,c){
+  return document.querySelector(`#candyBoard .candy-cell[data-row="${r}"][data-col="${c}"]`);
+}
+
+async function processMatches(matches){
+  animating=true;
+  clearTimeout(hintTimeout);
+  // Calculate score
+  const pts = calcPoints(matches);
+  score += pts; levelScore += pts;
+  totalCoinsThisGame += Math.floor(pts/20);
+  S.coins += Math.floor(pts/20);
+  S.totalCoins += Math.floor(pts/20);
+  // Show score pops
+  const centers = getMatchCenters(matches);
+  centers.forEach(({x,y,pts:p}) => spawnScorePop(x,y,p));
+  // Animate removal
+  matches.forEach(({row,col})=>{ const el=getCellEl(row,col); if(el){ el.classList.add('matched'); } });
+  await delay(280);
+  // Remove matched candies, create specials
+  createSpecials(matches);
+  matches.forEach(({row,col})=>{ board[row][col]={type:-1,special:null}; });
+  // Drop & refill
+  await dropAndFill();
+  // Chain check
+  const newMatches=findAllMatches();
+  if(newMatches.length>0){
+    await delay(100);
+    await processMatches(newMatches);
+  } else {
+    animating=false;
+    updateHUD();
+    updateProgressBar();
+    save();
+    updateCoinUI();
+    // Check win/loss
+    if(levelScore >= levelTarget){ setTimeout(showLevelComplete, 300); return; }
+    if(moves<=0){ setTimeout(()=>{ endGame(); },300); return; }
+    // Shuffle if no moves possible
+    if(!hasPossibleMoves()){ shuffleBoard(); showToast('🔀 Board shuffled!',false); }
+    // Hint
+    hintTimeout = setTimeout(showHint, 3000);
+  }
+}
+
+function calcPoints(matches){
+  const combo = Math.floor(matches.length / 3);
+  return matches.length * 30 * Math.max(1, combo);
+}
+
+function getMatchCenters(matches){
+  const groups=[];
+  // group by connected
+  const visited=new Set();
+  for(const m of matches){
+    const key=`${m.row},${m.col}`;
+    if(!visited.has(key)){
+      visited.add(key);
+      groups.push({x:0,y:0,pts:0,count:0});
+      const g=groups[groups.length-1];
+      // crude center approx
+      g.x=m.col; g.y=m.row; g.pts+=30; g.count++;
+    } else { const g=groups[groups.length-1]; g.pts+=30; }
+  }
+  return groups.map(g=>({x:g.x,y:g.y,pts:g.pts}));
+}
+
+function spawnScorePop(col,row,pts){
+  const grid=document.getElementById('candyBoard');
+  if(!grid) return;
+  const rect=grid.getBoundingClientRect();
+  const cellSize=grid.children[0]?grid.children[0].offsetWidth:44;
+  const padding=12;
+  const x=rect.left+padding+col*cellSize+cellSize/2;
+  const y=rect.top+padding+row*cellSize+cellSize/2;
+  const pop=document.createElement('div');
+  pop.className='score-pop';
+  pop.style.left=x+'px'; pop.style.top=y+'px';
+  pop.style.setProperty('--dx',(Math.random()*30-15)+'px');
+  pop.style.setProperty('--dy','0px');
+  pop.textContent='+'+pts;
+  document.body.appendChild(pop);
+  setTimeout(()=>pop.remove(),800);
+}
+
+function createSpecials(matches){
+  // 4-in-a-row → striped, 5+ → color bomb, L/T → wrapped
+  const counts={};
+  matches.forEach(({row,col,dir})=>{
+    const k=`${row},${col}`;
+    if(!counts[k]) counts[k]={row,col,dirs:[]};
+    if(dir) counts[k].dirs.push(dir);
+  });
+  // Find length of runs per row/col per type
+  const rows={}, cols={};
+  matches.forEach(({row,col,dir})=>{
+    if(dir==='h'){ if(!rows[row]) rows[row]={}; rows[row][col]=true; }
+    if(dir==='v'){ if(!cols[col]) cols[col]={}; cols[col][row]=true; }
+  });
+  // 5 horizontal → color bomb at middle
+  Object.entries(rows).forEach(([r,cs])=>{
+    const len=Object.keys(cs).length;
+    if(len>=5){
+      const mid=Math.floor((Math.min(...Object.keys(cs).map(Number))+Math.max(...Object.keys(cs).map(Number)))/2);
+      board[+r][mid]={type:0,special:'color-bomb'};
+      matches.splice(matches.findIndex(m=>m.row===+r&&m.col===mid),1);
+    } else if(len===4){
+      const mid=Object.keys(cs).map(Number)[1];
+      board[+r][mid]={type:board[+r][mid].type||0,special:'striped-h'};
+      matches.splice(matches.findIndex(m=>m.row===+r&&m.col===mid),1);
+    }
+  });
+  Object.entries(cols).forEach(([c,rs])=>{
+    const len=Object.keys(rs).length;
+    if(len>=5){
+      const mid=Math.floor((Math.min(...Object.keys(rs).map(Number))+Math.max(...Object.keys(rs).map(Number)))/2);
+      board[mid][+c]={type:0,special:'color-bomb'};
+      matches.splice(matches.findIndex(m=>m.row===mid&&m.col===+c),1);
+    } else if(len===4){
+      const mid=Object.keys(rs).map(Number)[1];
+      board[mid][+c]={type:board[mid][+c].type||0,special:'striped-v'};
+      matches.splice(matches.findIndex(m=>m.row===mid&&m.col===+c),1);
+    }
+  });
+}
+
+async function dropAndFill(){
+  // Drop existing candies down
+  for(let c=0;c<COLS;c++){
+    let emptyRow=ROWS-1;
+    for(let r=ROWS-1;r>=0;r--){
+      if(board[r][c].type!==-1){ board[emptyRow][c]=board[r][c]; if(emptyRow!==r) board[r][c]={type:-1,special:null}; emptyRow--; }
+    }
+    for(let r=emptyRow;r>=0;r--){ board[r][c]={type:randomType(),special:null}; }
+  }
+  renderBoard();
+  // Animate fall
+  document.querySelectorAll('#candyBoard .candy-cell').forEach(el=>{ el.classList.add('falling'); });
+  await delay(280);
+}
+
+function findAllMatches(){
+  const matched = new Set();
+  const list = [];
+  // Horizontal
+  for(let r=0;r<ROWS;r++){
+    let run=1;
+    for(let c=1;c<=COLS;c++){
+      if(c<COLS && board[r][c].type>=0 && board[r][c].type===board[r][c-1].type && !board[r][c].special && !board[r][c-1].special){
+        run++;
+      } else {
+        if(run>=3){ for(let k=c-run;k<c;k++){ const key=`${r},${k}`; if(!matched.has(key)){ matched.add(key); list.push({row:r,col:k,dir:'h'}); } } }
+        run=1;
+      }
+    }
+  }
+  // Vertical
+  for(let c=0;c<COLS;c++){
+    let run=1;
+    for(let r=1;r<=ROWS;r++){
+      if(r<ROWS && board[r][c].type>=0 && board[r][c].type===board[r-1][c].type && !board[r][c].special && !board[r-1][c].special){
+        run++;
+      } else {
+        if(run>=3){ for(let k=r-run;k<r;k++){ const key=`${k},${c}`; if(!matched.has(key)){ matched.add(key); list.push({row:k,col:c,dir:'v'}); } } }
+        run=1;
+      }
+    }
+  }
+  return list;
+}
+
+function hasPossibleMoves(){
+  // Quick check: any adjacent pair that when swapped creates a match
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    // swap right
+    if(c+1<COLS){
+      const tmp=board[r][c]; board[r][c]=board[r][c+1]; board[r][c+1]=tmp;
+      const m=findAllMatches().length>0;
+      const t2=board[r][c]; board[r][c]=board[r][c+1]; board[r][c+1]=t2;
+      if(m) return true;
+    }
+    // swap down
+    if(r+1<ROWS){
+      const tmp=board[r][c]; board[r][c]=board[r+1][c]; board[r+1][c]=tmp;
+      const m=findAllMatches().length>0;
+      const t2=board[r][c]; board[r][c]=board[r+1][c]; board[r+1][c]=t2;
+      if(m) return true;
+    }
+  }
+  return false;
+}
+
+function shuffleBoard(){
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    const r2=Math.floor(Math.random()*ROWS), c2=Math.floor(Math.random()*COLS);
+    const tmp=board[r][c]; board[r][c]=board[r2][c2]; board[r2][c2]=tmp;
+  }
+  for(let i=0;i<10;i++){
+    const m=findAllMatches();
+    if(!m.length) break;
+    m.forEach(({row,col})=>{ board[row][col].type=randomType(); });
+  }
+  renderBoard();
+}
+
+function showHint(){
+  if(!gameActive||animating) return;
+  // Find first valid swap
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    if(c+1<COLS){
+      const tmp=board[r][c]; board[r][c]=board[r][c+1]; board[r][c+1]=tmp;
+      const m=findAllMatches().length>0;
+      const t2=board[r][c]; board[r][c]=board[r][c+1]; board[r][c+1]=t2;
+      if(m){ getCellEl(r,c)?.classList.add('hint'); getCellEl(r,c+1)?.classList.add('hint'); return; }
+    }
+    if(r+1<ROWS){
+      const tmp=board[r][c]; board[r][c]=board[r+1][c]; board[r+1][c]=tmp;
+      const m=findAllMatches().length>0;
+      const t2=board[r][c]; board[r][c]=board[r+1][c]; board[r+1][c]=t2;
+      if(m){ getCellEl(r,c)?.classList.add('hint'); getCellEl(r+1,c)?.classList.add('hint'); return; }
+    }
+  }
+}
+
+function delay(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+// ── HUD update ───────────────────────────────────────────────
+function updateHUD(){
+  document.getElementById('scoreEl').textContent = score.toLocaleString();
+  document.getElementById('movesEl').textContent = moves;
+  updateProgressBar();
+}
+function updateProgressBar(){
+  const pct = Math.min(100, (levelScore/levelTarget)*100);
+  document.getElementById('levelFill').style.width = pct+'%';
+  document.getElementById('levelTarget').textContent = `🎯 Target: ${levelScore.toLocaleString()} / ${levelTarget.toLocaleString()}`;
+}
+function updateCoinUI(){ document.getElementById('coinEl').textContent = S.coins.toLocaleString(); }
+
+// ── Game flow ─────────────────────────────────────────────────
+window.startGame = function(){
+  if(!currentUser){ showToast('Please login first!',true); return; }
+  const cfg = getLevelConfig(S.level || 1);
+  currentLevel = S.level || 1;
+  levelTarget = cfg.target;
+  moves = cfg.moves;
+  score = 0; levelScore = 0; totalCoinsThisGame = 0;
+  selectedCell = null;
+  gameActive = false; animating = false;
+  initBoard();
+  document.getElementById('homeScreen').classList.add('hidden');
+  document.getElementById('gameoverScreen').classList.add('hidden');
+  document.getElementById('levelCompleteScreen').classList.remove('open');
+  document.getElementById('gameScreen').classList.add('active');
+  document.getElementById('pauseBtn').style.display = 'block';
+  document.getElementById('levelLabel').textContent = `LEVEL ${currentLevel}`;
+  updateHUD();
+  renderBoard();
+  gameActive = true;
+  const today = new Date().toDateString();
+  if(S.lastPlayed !== today){
+    const yest = new Date(Date.now()-86400000).toDateString();
+    S.streak = S.lastPlayed===yest ? (S.streak||0)+1 : 1;
+    S.lastPlayed = today; save();
+  }
+};
+
+async function endGame(){
+  gameActive = false;
+  animating = false;
+  clearTimeout(hintTimeout);
+  const coinsEarned = totalCoinsThisGame + Math.floor(score/100);
+  S.coins += coinsEarned; S.totalCoins += coinsEarned;
+  S.gamesPlayed++;
+  if(score > S.bestScore) S.bestScore = score;
+  save();
+  await updateLeaderboard(score);
+  updateCoinUI();
+  document.getElementById('goScore').textContent = score.toLocaleString();
+  document.getElementById('goCoins').textContent = coinsEarned.toLocaleString();
+  document.getElementById('goBest').textContent = score>=S.bestScore?'🏆 New Best!':`Best: ${S.bestScore.toLocaleString()}`;
+  document.getElementById('pauseBtn').style.display = 'none';
+  document.getElementById('gameoverScreen').classList.remove('hidden');
+  checkAchs();
+  if(navigator.vibrate) navigator.vibrate([100,50,100]);
+  try{ show_11069622({type:'inApp',inAppSettings:{frequency:60,capping:0.1,interval:30,timeout:5,everyPage:false}}); }catch(e){}
+}
+
+function showLevelComplete(){
+  gameActive = false;
+  clearTimeout(hintTimeout);
+  const coinsEarned = totalCoinsThisGame + Math.floor(score/80);
+  S.coins += coinsEarned; S.totalCoins += coinsEarned;
+  S.gamesPlayed++; S.totalLevelsCleared++;
+  if(score > S.bestScore) S.bestScore = score;
+  S.level = (S.level||1) + 1;
+  save(); updateCoinUI();
+  updateLeaderboard(score);
+  // Stars
+  const pct = levelScore/levelTarget;
+  const stars = pct>=1.5?3:pct>=1.2?2:1;
+  document.getElementById('lcStars').textContent = '⭐'.repeat(stars)+'☆'.repeat(3-stars);
+  document.getElementById('lcScore').textContent = 'Score: '+score.toLocaleString();
+  document.getElementById('lcCoins').textContent = '🪙 +'+coinsEarned.toLocaleString();
+  document.getElementById('lcLevel').textContent = `Level ${currentLevel} Complete!`;
+  document.getElementById('levelCompleteScreen').classList.add('open');
+  checkAchs();
+  if(navigator.vibrate) navigator.vibrate([80,40,80,40,120]);
+}
+
+window.nextLevel = function(){
+  document.getElementById('levelCompleteScreen').classList.remove('open');
+  startGame();
+};
+
+async function updateLeaderboard(sc){
+  if(!currentUser) return;
+  try {
+    const ref = doc(db,'leaderboard',currentUser.uid);
+    const snap = await getDoc(ref);
+    if(!snap.exists()||snap.data().score<sc){
+      await setDoc(ref,{uid:currentUser.uid,username:S.username||currentUser.email,score:sc,updatedAt:serverTimestamp()});
+    }
+  } catch(e){ console.warn('leaderboard error',e); }
+}
+
+let _paused = false;
+window.togglePause = function(){
+  if(!gameActive&&!_paused) return;
+  _paused = !_paused;
+  document.getElementById('pauseBtn').textContent = _paused?'▶ RESUME':'⏸ PAUSE';
+  if(_paused) gameActive=false; else { gameActive=true; }
+};
+window.showHome = function(){
+  gameActive=false; _paused=false;
+  document.getElementById('gameScreen').classList.remove('active');
+  document.getElementById('homeScreen').classList.remove('hidden');
+  document.getElementById('gameoverScreen').classList.add('hidden');
+  document.getElementById('pauseBtn').style.display='none';
+};
+window.restartFromPause=function(){ window.startGame(); };
+window.quitToHome=function(){ window.showHome(); };
+
+// ============================================================
+//  REWARD AD
+// ============================================================
+window.showRewardAd = function(){
+  const reward = Math.max(50, Math.floor(score/8));
+  const overlay = document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;color:#fff;';
+  overlay.innerHTML=`<div style="font-size:60px;">📺</div><h1>Reward Ad</h1><p>Watch ad to claim ${reward} coins</p><div id="adCounter" style="font-size:42px;margin-top:10px;">5</div>`;
+  document.body.appendChild(overlay);
+  let sec=5;
+  const timer=setInterval(()=>{
+    sec--; document.getElementById('adCounter').textContent=sec;
+    if(sec<=0){ clearInterval(timer); S.coins+=reward; S.totalCoins+=reward; save(); updateCoinUI(); overlay.remove(); showToast(`🎉 ${reward} coins added!`,false); }
+  },1000);
+};
+
+// ============================================================
+//  WALLET
+// ============================================================
+window.openWallet = function(){
+  listenToUserTransactions();
+  document.getElementById('walletView').classList.add('open');
+  updateWalletUI();
+};
+window.closeWallet = function(){ document.getElementById('walletView').classList.remove('open'); };
+
+function updateWalletUI(){
+  const rupeesVal = ((S.coins||0)/10000).toFixed(2);
+  const el = document.getElementById('wv-balance');
+  if(el) el.textContent = '₹'+rupeesVal;
+  const ce = document.getElementById('wv-coins');
+  if(ce) ce.textContent = (S.coins||0).toLocaleString()+' 🍭';
+  renderTx();
+}
+
+window.updateWdPreview = function(){
+  const coins = parseInt(document.getElementById('wd-coins').value)||0;
+  document.getElementById('wd-preview').textContent = '₹'+(coins/10000).toFixed(2);
+};
+
+window.requestWithdrawal = function(){
+  const coins = parseInt(document.getElementById('wd-coins').value)||0;
+  const method = document.getElementById('wd-method').value;
+  const acc = document.getElementById('wd-acc').value.trim();
+  const name = document.getElementById('wd-name').value.trim();
+  if(coins<5000){ showToast('Minimum 5000 coins!',true); return; }
+  if(S.coins<coins){ showToast('Not enough coins!',true); return; }
+  if(!acc||!name){ showToast('Fill all fields!',true); return; }
+  const rupees = (coins/10000).toFixed(2);
+  pendingWd={coins,method,acc,name,rupees};
+  document.getElementById('m-title').textContent='Confirm Withdrawal';
+  document.getElementById('m-body').textContent=`Withdraw ${coins.toLocaleString()} 🍭 → ₹${rupees} via ${method.toUpperCase()} to ${acc}?`;
+  document.getElementById('modal').classList.add('open');
+};
+
+window.closeModal = function(){ document.getElementById('modal').classList.remove('open'); };
+
+window.confirmWd = async function(){
+  if(!pendingWd||!currentUser){ closeModal(); return; }
+  const {coins,method,acc,name,rupees}=pendingWd;
+  S.coins-=coins;
+  const txData={
+    uid:currentUser.uid,email:currentUser.email,username:S.username||'Player',
+    coins,rupees,method,acc,name,status:'pending',
+    date:new Date().toLocaleDateString('en-PK',{day:'2-digit',month:'short',year:'numeric'}),
+    timestamp:Date.now(),createdAt:serverTimestamp()
   };
-  window.closeAdmin=function(){
-    document.getElementById('adminView').classList.remove('open');
-    if(pendingWrUnsubscribe){ pendingWrUnsubscribe(); pendingWrUnsubscribe=null; }
-  };
+  try {
+    const txRef=await addDoc(collection(db,'users',currentUser.uid,'transactions'),txData);
+    txData.id=txRef.id;
+    await addDoc(collection(db,'withdrawalRequests'),{...txData,userDocId:currentUser.uid,txId:txRef.id});
+  } catch(e){ console.warn('tx error',e); }
+  save(); closeModal(); updateCoinUI(); updateWalletUI();
+  document.getElementById('wd-coins').value='';
+  document.getElementById('wd-acc').value='';
+  document.getElementById('wd-name').value='';
+  document.getElementById('wd-preview').textContent='₹0.00';
+  showToast('✅ Withdrawal request submitted!',false);
+  checkAchs();
+};
 
-  window.checkPin=function(){ /* PIN removed — access controlled by email */ };
+function renderTx(){
+  const el=document.getElementById('txList');
+  if(!el) return;
+  if(!S.transactions||!S.transactions.length){ el.innerHTML='<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.3);font-size:13px;">No transactions yet</div>'; return; }
+  el.innerHTML=S.transactions.map(tx=>`<div class="tx-item"><div class="tx-ico">💸</div><div style="flex:1;"><div class="tx-nm">${(tx.method||'').toUpperCase()} · ${tx.acc||''}</div><div class="tx-dt">${tx.date}</div></div><div style="text-align:right;"><div class="tx-amt">-₹${tx.rupees}</div><div class="tx-st ${tx.status}">${(tx.status||'pending').toUpperCase()}</div></div></div>`).join('');
+}
 
-  window.adminLogout=function(){
-    isAdminAuth=false;
-    if(pendingWrUnsubscribe){ pendingWrUnsubscribe(); pendingWrUnsubscribe=null; }
-    closeAdmin();
-  };
+function listenToUserTransactions(){
+  if(!currentUser) return;
+  const txRef=collection(db,'users',currentUser.uid,'transactions');
+  onSnapshot(txRef,(snap)=>{ S.transactions=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.timestamp-a.timestamp); renderTx(); });
+}
 
-  window.adminRefresh=function(){ if(isAdminAuth) loadAdminDash(); };
+// ============================================================
+//  PROFILE
+// ============================================================
+window.openProfile = function(){
+  document.getElementById('profileView').classList.add('open');
+  document.getElementById('ps-best').textContent=S.bestScore.toLocaleString();
+  document.getElementById('ps-coins').textContent=S.totalCoins.toLocaleString();
+  document.getElementById('ps-games').textContent=S.gamesPlayed;
+  document.getElementById('ps-wd').textContent='₹'+(S.totalWithdrawn||0).toFixed(2);
+  document.getElementById('ps-streak').textContent=S.streak||1;
+  document.getElementById('ps-level').textContent=S.level||1;
+  document.getElementById('pv-lvl').textContent=Math.floor((S.totalCoins||0)/1000)+1;
+  document.getElementById('pv-name').textContent=S.username||'Candy Player';
+  document.getElementById('pv-uid').textContent=currentUser?currentUser.email:'';
+  checkAchs(); loadLeaderboard();
+};
+window.closeProfile = function(){ document.getElementById('profileView').classList.remove('open'); };
 
-  async function loadAdminDash(){
-    // Show loading states
-    adminLoading(document.getElementById('ad-users-list'),'Loading users...');
-    adminLoading(document.getElementById('ad-pendingList'),'Loading...');
-    adminLoading(document.getElementById('ad-processedList'),'Loading...');
-    ['ad-users','ad-pending','ad-paid','ad-games'].forEach(id=>{
-      const el=document.getElementById(id); if(el) el.textContent='...';
-    });
+async function loadLeaderboard(){
+  try {
+    const q=query(collection(db,'leaderboard'),orderBy('score','desc'),limit(10));
+    const snap=await getDocs(q);
+    const rankClasses=['gold','silver','bronze'];
+    const items=snap.docs.map((d,i)=>{
+      const data=d.data(); const medal=i<3?rankClasses[i]:'';
+      const isSelf=currentUser&&d.id===currentUser.uid;
+      return `<div class="lb-item" style="${isSelf?'border-color:rgba(255,51,102,0.3);background:rgba(255,51,102,0.05);':''}"><div class="lb-rank ${medal}">#${i+1}</div><div class="lb-name">${data.username||'Player'}${isSelf?' (You)':''}</div><div class="lb-score">${(data.score||0).toLocaleString()}</div></div>`;
+    }).join('');
+    const lbEl=document.getElementById('leaderboardList');
+    if(lbEl) lbEl.innerHTML=items||'<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">No scores yet</div>';
+  } catch(e){ console.warn('leaderboard error',e); }
+}
 
-    // ── USERS ──
+function checkAchs(){
+  if(S.gamesPlayed>=1) setAch('a1','✅ Done');
+  if(S.totalCoins>=1000) setAch('a2','✅ Done');
+  if(S.bestScore>=5000) setAch('a3','✅ Done');
+  if(S.transactions&&S.transactions.length>=1) setAch('a4','✅ Done');
+  if((S.totalLevelsCleared||0)>=5) setAch('a5','✅ Done');
+}
+function setAch(id,txt){ const el=document.getElementById(id); if(el){ el.textContent=txt; el.classList.add('done'); } }
+
+// ============================================================
+//  ADMIN PANEL
+// ============================================================
+let isAdminAuth=false;
+let adminUsersCache=[];
+const pendingWrData={};
+let pendingWrUnsubscribe=null;
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function adminLoading(el,msg){ if(el) el.innerHTML=`<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.4);font-size:13px;">⏳ ${msg||'Loading...'}</div>`; }
+function adminError(el,msg){ if(el) el.innerHTML=`<div style="text-align:center;padding:14px;color:#FF6B00;font-size:12px;border:1px solid rgba(255,107,0,0.3);border-radius:10px;margin:0 14px;">⚠️ ${escHtml(msg)}</div>`; }
+
+window.openAdminLogin=function(){
+  if(!currentUser||currentUser.email!=='saifistate@gmail.com'){ showToast('Access denied.',true); return; }
+  document.getElementById('adminView').classList.add('open');
+  document.getElementById('aLoginWrap').style.display='none';
+  document.getElementById('aDashWrap').style.display='flex';
+  isAdminAuth=true;
+  loadAdminDash();
+};
+window.closeAdmin=function(){
+  document.getElementById('adminView').classList.remove('open');
+  if(pendingWrUnsubscribe){ pendingWrUnsubscribe(); pendingWrUnsubscribe=null; }
+};
+window.checkPin=function(){};
+window.adminLogout=function(){ isAdminAuth=false; if(pendingWrUnsubscribe){ pendingWrUnsubscribe(); pendingWrUnsubscribe=null; } closeAdmin(); };
+window.adminRefresh=function(){ if(isAdminAuth) loadAdminDash(); };
+
+async function loadAdminDash(){
+  adminLoading(document.getElementById('ad-users-list'),'Loading users...');
+  adminLoading(document.getElementById('ad-pendingList'),'Loading...');
+  adminLoading(document.getElementById('ad-processedList'),'Loading...');
+  ['ad-users','ad-pending','ad-paid','ad-games'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent='...'; });
+  try {
+    let usersLoaded=false;
+    let usersError='';
     try {
-      let usersLoaded=false;
-      try {
-        const usersSnap=await getDocs(collection(db,'users'));
-        adminUsersCache=usersSnap.docs.map(d=>({id:d.id,...d.data()}));
-        usersLoaded=true;
-      } catch(e1){ console.warn('Full users read blocked, fallback:', e1.message); }
-      if(!usersLoaded){
-        const uidSet=new Set();
-        if(currentUser) uidSet.add(currentUser.uid);
-        try{ const lb=await getDocs(collection(db,'leaderboard')); lb.docs.forEach(d=>uidSet.add(d.id)); }catch(e){}
-        try{ const wr=await getDocs(collection(db,'withdrawalRequests')); wr.docs.forEach(d=>{ const u=d.data().uid||d.data().userDocId; if(u) uidSet.add(u); }); }catch(e){}
+      const usersSnap=await getDocs(collection(db,'users'));
+      adminUsersCache=usersSnap.docs.map(d=>({id:d.id,...d.data()}));
+      usersLoaded=true;
+    } catch(e1){
+      usersError=e1.message||'Permission denied';
+      // Fallback: collect known UIDs from leaderboard + current user
+      const uidSet=new Set();
+      if(currentUser) uidSet.add(currentUser.uid);
+      try{ const lb=await getDocs(collection(db,'leaderboard')); lb.docs.forEach(d=>uidSet.add(d.id)); }catch(e){}
+      if(uidSet.size>0){
         const fetches=await Promise.allSettled([...uidSet].map(uid=>getDoc(doc(db,'users',uid))));
         adminUsersCache=fetches.filter(r=>r.status==='fulfilled'&&r.value.exists()).map(r=>({id:r.value.id,...r.value.data()}));
-        if(adminUsersCache.length>0) usersLoaded=true;
-      }
-      if(usersLoaded){
-        const usersEl=document.getElementById('ad-users');
-        if(usersEl) usersEl.textContent=adminUsersCache.length;
-        const totalGames=adminUsersCache.reduce((s,u)=>s+(u.gamesPlayed||0),0);
-        const gamesEl=document.getElementById('ad-games');
-        if(gamesEl) gamesEl.textContent=totalGames;
-        renderAdminUsers();
-        const sel=document.getElementById('gc-user-sel');
-        if(sel){
-          const sorted=[...adminUsersCache].sort((a,b)=>(b.coins||0)-(a.coins||0));
-          sel.innerHTML='<option value="">— Select user —</option>'+sorted.map(u=>
-            `<option value="${escHtml(u.id)}">${escHtml(u.username||u.email||'Unknown')} · 🪙${(u.coins||0).toLocaleString()}</option>`
-          ).join('');
+        if(adminUsersCache.length>0){
+          usersLoaded=true;
+          usersError=''; // fallback succeeded
+          showToast('⚠️ Loaded partial users via fallback. Update Firestore rules for full access.',true);
         }
-      } else { throw new Error('Could not load users — update Firestore rules (see guide below)'); }
-    } catch(e){
-      console.warn('admin users error',e);
-      adminError(document.getElementById('ad-users-list'), e.message||'Cannot load users. Update Firestore rules — see guide below.');
-      ['ad-users','ad-games'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent='ERR'; });
-    }
-
-    // ── WITHDRAWAL REQUESTS ──
-    try {
-      const wrSnap=await getDocs(collection(db,'withdrawalRequests'));
-      const all=wrSnap.docs.map(d=>({id:d.id,...d.data()}));
-      const pending=all.filter(r=>r.status==='pending').sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
-      const processed=all.filter(r=>r.status!=='pending').sort((a,b)=>(b.timestamp||0)-(a.timestamp||0)).slice(0,50);
-      const approved=all.filter(r=>r.status==='approved');
-
-      const pendEl=document.getElementById('ad-pending');
-      if(pendEl) pendEl.textContent=pending.length;
-
-      const paid=approved.reduce((s,r)=>s+parseFloat(r.rupees||0),0);
-      const paidEl=document.getElementById('ad-paid');
-      if(paidEl) paidEl.textContent='₹'+paid.toFixed(2);
-
-      // Store for processWr
-      pending.forEach(r=>{ pendingWrData[r.id]=r; });
-
-      renderPendingList(pending);
-      renderProcessedList(processed);
-
-      // Set up real-time listener for pending (replaces static render)
-      setupPendingListener();
-
-    } catch(e){
-      console.warn('admin wr error',e);
-      adminError(document.getElementById('ad-pendingList'), 'Cannot load withdrawals. Check Firestore rules.');
-      adminError(document.getElementById('ad-processedList'), 'Cannot load processed requests.');
-      ['ad-pending','ad-paid'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent='ERR'; });
-    }
-  }
-
-  function setupPendingListener(){
-    if(pendingWrUnsubscribe){ pendingWrUnsubscribe(); }
-    const q=query(collection(db,'withdrawalRequests'),where('status','==','pending'));
-    pendingWrUnsubscribe=onSnapshot(q,(snap)=>{
-      const pending=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
-      pending.forEach(r=>{ pendingWrData[r.id]=r; });
-      const pendEl=document.getElementById('ad-pending');
-      if(pendEl) pendEl.textContent=pending.length;
-      renderPendingList(pending);
-    },(err)=>{
-      console.warn('pending listener error',err);
-      // Don't show error — static load already populated it
-    });
-  }
-
-  function renderAdminUsers(){
-    const el=document.getElementById('ad-users-list');
-    if(!el) return;
-    if(!adminUsersCache.length){
-      el.innerHTML='<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:13px;">No users registered yet</div>';
-      return;
-    }
-    const sorted=[...adminUsersCache].sort((a,b)=>(b.totalCoins||0)-(a.totalCoins||0));
-    el.innerHTML=sorted.map(u=>`
-      <div class="user-row">
-        <div style="flex:1;min-width:0;">
-          <div class="user-row-email" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(u.username||'Unknown')}</div>
-          <div class="user-row-info" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(u.email||u.id||'')}</div>
-          <div style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:1px;">Games: ${u.gamesPlayed||0} · Best: ${(u.bestScore||0).toLocaleString()}</div>
-        </div>
-        <div class="user-row-coins" style="margin-left:8px;white-space:nowrap;">🪙 ${(u.coins||0).toLocaleString()}</div>
-      </div>`).join('');
-  }
-
-  function renderPendingList(pending){
-    const pel=document.getElementById('ad-pendingList');
-    if(!pel) return;
-    if(!pending.length){
-      pel.innerHTML='<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:13px;">No pending requests 🎉</div>';
-      return;
-    }
-    pel.innerHTML=pending.map(r=>`
-      <div class="wr-card" id="wrc-${escHtml(r.id)}">
-        <div class="wr-h">
-          <div class="wr-user">👤 ${escHtml(r.name||r.username||'User')}</div>
-          <div class="wr-amt">₹${escHtml(String(r.rupees||0))}</div>
-        </div>
-        <div class="wr-det">
-          📧 ${escHtml(r.email||'')}<br>
-          📱 ${escHtml((r.method||'').toUpperCase())}: ${escHtml(r.acc||'')}<br>
-          🪙 ${(r.coins||0).toLocaleString()} coins · 📅 ${escHtml(r.date||'')}
-        </div>
-        <div class="wr-acts">
-          <button class="btn-app" onclick="processWr('${escHtml(r.id)}','approved')">✅ APPROVE</button>
-          <button class="btn-rej" onclick="processWr('${escHtml(r.id)}','rejected')">❌ REJECT</button>
-        </div>
-      </div>`).join('');
-  }
-
-  function renderProcessedList(processed){
-    const prel=document.getElementById('ad-processedList');
-    if(!prel) return;
-    if(!processed.length){
-      prel.innerHTML='<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:13px;">No processed requests yet</div>';
-      return;
-    }
-    prel.innerHTML=processed.map(r=>`
-      <div class="wr-card">
-        <div class="wr-h">
-          <div class="wr-user">👤 ${escHtml(r.name||r.username||'User')}</div>
-          <div class="wr-amt">₹${escHtml(String(r.rupees||0))}</div>
-        </div>
-        <div class="wr-det">
-          📧 ${escHtml(r.email||'')}<br>
-          📱 ${escHtml((r.method||'').toUpperCase())}: ${escHtml(r.acc||'')} · 📅 ${escHtml(r.date||'')}
-        </div>
-        <div class="wr-done ${r.status==='approved'?'approved':'rejected'}">
-          ${r.status==='approved'?'✅ APPROVED & PAID':'❌ REJECTED'}
-        </div>
-      </div>`).join('');
-  }
-
-  window.processWr=async function(wrId, action){
-    const r=pendingWrData[wrId];
-    if(!r){ showToast('Data not found — try refreshing.',true); return; }
-    const btn1=document.querySelector(`#wrc-${wrId} .btn-app`);
-    const btn2=document.querySelector(`#wrc-${wrId} .btn-rej`);
-    if(btn1) btn1.disabled=true;
-    if(btn2) btn2.disabled=true;
-    try {
-      const batch=writeBatch(db);
-      batch.update(doc(db,'withdrawalRequests',wrId),{status:action,processedAt:serverTimestamp()});
-      const userDocId=r.userDocId||r.uid;
-      const txId=r.txId;
-      if(userDocId&&txId){
-        batch.update(doc(db,'users',userDocId,'transactions',txId),{status:action});
       }
-      if(action==='rejected'&&(r.coins||0)>0&&userDocId){
-        const uRef=doc(db,'users',userDocId);
-        const uSnap=await getDoc(uRef);
-        if(uSnap.exists()) batch.update(uRef,{coins:(uSnap.data().coins||0)+(r.coins||0)});
-      }
-      if(action==='approved'&&parseFloat(r.rupees||0)>0&&userDocId){
-        const uRef=doc(db,'users',userDocId);
-        const uSnap=await getDoc(uRef);
-        if(uSnap.exists()) batch.update(uRef,{totalWithdrawn:(uSnap.data().totalWithdrawn||0)+parseFloat(r.rupees||0)});
-      }
-      await batch.commit();
-      delete pendingWrData[wrId];
-      showToast(action==='approved'?'✅ Approved & paid!':'❌ Rejected & coins refunded', action!=='approved');
-      // Refresh processed section
-      const wrSnap=await getDocs(collection(db,'withdrawalRequests'));
-      const all=wrSnap.docs.map(d=>({id:d.id,...d.data()}));
-      renderProcessedList(all.filter(r=>r.status!=='pending').sort((a,b)=>(b.timestamp||0)-(a.timestamp||0)).slice(0,50));
-      const paid=all.filter(r=>r.status==='approved').reduce((s,r)=>s+parseFloat(r.rupees||0),0);
-      const paidEl=document.getElementById('ad-paid'); if(paidEl) paidEl.textContent='₹'+paid.toFixed(2);
-    } catch(e){
-      console.warn('processWr error',e);
-      showToast('Error: '+e.message,true);
-      if(btn1) btn1.disabled=false;
-      if(btn2) btn2.disabled=false;
     }
-  };
+    if(usersLoaded){
+      const usersEl=document.getElementById('ad-users'); if(usersEl) usersEl.textContent=adminUsersCache.length;
+      const totalGames=adminUsersCache.reduce((s,u)=>s+(u.gamesPlayed||0),0);
+      const gamesEl=document.getElementById('ad-games'); if(gamesEl) gamesEl.textContent=totalGames;
+      renderAdminUsers();
+      const sel=document.getElementById('gc-user-sel');
+      if(sel){ const sorted=[...adminUsersCache].sort((a,b)=>(b.coins||0)-(a.coins||0)); sel.innerHTML='<option value="">— Select user —</option>'+sorted.map(u=>`<option value="${escHtml(u.id)}">${escHtml(u.username||u.email||'Unknown')} · 🪙${(u.coins||0).toLocaleString()}</option>`).join(''); }
+    } else {
+      throw new Error(usersError||'Could not load users — check Firestore security rules allow admin read on /users');
+    }
+  } catch(e){ adminError(document.getElementById('ad-users-list'),e.message||'Cannot load users. Check Firestore rules.'); ['ad-users','ad-games'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent='ERR'; }); }
 
-  window.adminGiveCoins=async function(){
-    const amt=parseInt(document.getElementById('gc-amt').value)||0;
-    const selEl=document.getElementById('gc-user-sel');
-    const targetUid=selEl?selEl.value:'';
-    if(amt<100){ showToast('Minimum 100 coins!',true); return; }
-    if(!targetUid){ showToast('Select a user first!',true); return; }
+  try {
+    const wrSnap=await getDocs(collection(db,'withdrawalRequests'));
+    const all=wrSnap.docs.map(d=>({id:d.id,...d.data()}));
+    const pending=all.filter(r=>r.status==='pending').sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
+    const processed=all.filter(r=>r.status!=='pending').sort((a,b)=>(b.timestamp||0)-(a.timestamp||0)).slice(0,50);
+    const approved=all.filter(r=>r.status==='approved');
+    const pendEl=document.getElementById('ad-pending'); if(pendEl) pendEl.textContent=pending.length;
+    const paid=approved.reduce((s,r)=>s+parseFloat(r.rupees||0),0);
+    const paidEl=document.getElementById('ad-paid'); if(paidEl) paidEl.textContent='₹'+paid.toFixed(2);
+    pending.forEach(r=>{ pendingWrData[r.id]=r; });
+    renderPendingList(pending); renderProcessedList(processed); setupPendingListener();
+  } catch(e){ adminError(document.getElementById('ad-pendingList'),'Cannot load withdrawals.'); ['ad-pending','ad-paid'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent='ERR'; }); }
+}
+
+function setupPendingListener(){
+  if(pendingWrUnsubscribe) pendingWrUnsubscribe();
+  const q=query(collection(db,'withdrawalRequests'),where('status','==','pending'));
+  pendingWrUnsubscribe=onSnapshot(q,(snap)=>{ const pending=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.timestamp||0)-(a.timestamp||0)); pending.forEach(r=>{ pendingWrData[r.id]=r; }); const pendEl=document.getElementById('ad-pending'); if(pendEl) pendEl.textContent=pending.length; renderPendingList(pending); },(err)=>{ console.warn('pending listener error',err); });
+}
+
+function renderAdminUsers(){
+  const el=document.getElementById('ad-users-list'); if(!el) return;
+  if(!adminUsersCache.length){ el.innerHTML='<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:13px;">No users registered yet</div>'; return; }
+  const sorted=[...adminUsersCache].sort((a,b)=>(b.totalCoins||0)-(a.totalCoins||0));
+  el.innerHTML=sorted.map(u=>`<div class="user-row"><div style="flex:1;min-width:0;"><div class="user-row-email" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(u.username||'Unknown')}</div><div class="user-row-info" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(u.email||u.id||'')}</div><div style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:1px;">Games:${u.gamesPlayed||0}·Best:${(u.bestScore||0).toLocaleString()}</div></div><div class="user-row-coins" style="margin-left:8px;white-space:nowrap;">🪙${(u.coins||0).toLocaleString()}</div></div>`).join('');
+}
+
+function renderPendingList(pending){
+  const pel=document.getElementById('ad-pendingList'); if(!pel) return;
+  if(!pending.length){ pel.innerHTML='<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:13px;">No pending requests 🎉</div>'; return; }
+  pel.innerHTML=pending.map(r=>`<div class="wr-card" id="wrc-${escHtml(r.id)}"><div class="wr-h"><div class="wr-user">👤 ${escHtml(r.name||r.username||'User')}</div><div class="wr-amt">₹${escHtml(String(r.rupees||0))}</div></div><div class="wr-det">📧 ${escHtml(r.email||'')}<br>📱 ${escHtml((r.method||'').toUpperCase())}: ${escHtml(r.acc||'')}<br>🍭 ${(r.coins||0).toLocaleString()} coins · 📅 ${escHtml(r.date||'')}</div><div class="wr-acts"><button class="btn-app" onclick="processWr('${escHtml(r.id)}','approved')">✅ APPROVE</button><button class="btn-rej" onclick="processWr('${escHtml(r.id)}','rejected')">❌ REJECT</button></div></div>`).join('');
+}
+
+function renderProcessedList(processed){
+  const prel=document.getElementById('ad-processedList'); if(!prel) return;
+  if(!processed.length){ prel.innerHTML='<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:13px;">No processed requests yet</div>'; return; }
+  prel.innerHTML=processed.map(r=>`<div class="wr-card"><div class="wr-h"><div class="wr-user">👤 ${escHtml(r.name||r.username||'User')}</div><div class="wr-amt">₹${escHtml(String(r.rupees||0))}</div></div><div class="wr-det">📧 ${escHtml(r.email||'')}<br>📱 ${escHtml((r.method||'').toUpperCase())}: ${escHtml(r.acc||'')} · 📅 ${escHtml(r.date||'')}</div><div class="wr-done ${r.status==='approved'?'approved':'rejected'}">${r.status==='approved'?'✅ APPROVED & PAID':'❌ REJECTED'}</div></div>`).join('');
+}
+
+window.processWr=async function(wrId,action){
+  const r=pendingWrData[wrId];
+  if(!r){ showToast('Data not found — try refreshing.',true); return; }
+  const btn1=document.querySelector(`#wrc-${wrId} .btn-app`), btn2=document.querySelector(`#wrc-${wrId} .btn-rej`);
+  if(btn1) btn1.disabled=true; if(btn2) btn2.disabled=true;
+  try {
+    const batch=writeBatch(db);
+    batch.update(doc(db,'withdrawalRequests',wrId),{status:action,processedAt:serverTimestamp()});
+    const userDocId=r.userDocId||r.uid; const txId=r.txId;
+    if(userDocId&&txId) batch.update(doc(db,'users',userDocId,'transactions',txId),{status:action});
+    if(action==='rejected'&&(r.coins||0)>0&&userDocId){ const uRef=doc(db,'users',userDocId); const uSnap=await getDoc(uRef); if(uSnap.exists()) batch.update(uRef,{coins:(uSnap.data().coins||0)+(r.coins||0)}); }
+    if(action==='approved'&&parseFloat(r.rupees||0)>0&&userDocId){ const uRef=doc(db,'users',userDocId); const uSnap=await getDoc(uRef); if(uSnap.exists()) batch.update(uRef,{totalWithdrawn:(uSnap.data().totalWithdrawn||0)+parseFloat(r.rupees||0)}); }
+    await batch.commit();
+    delete pendingWrData[wrId];
+    showToast(action==='approved'?'✅ Approved & paid!':'❌ Rejected & coins refunded',action!=='approved');
+    const wrSnap=await getDocs(collection(db,'withdrawalRequests'));
+    const all=wrSnap.docs.map(d=>({id:d.id,...d.data()}));
+    renderProcessedList(all.filter(r=>r.status!=='pending').sort((a,b)=>(b.timestamp||0)-(a.timestamp||0)).slice(0,50));
+    const paid=all.filter(r=>r.status==='approved').reduce((s,r)=>s+parseFloat(r.rupees||0),0);
+    const paidEl=document.getElementById('ad-paid'); if(paidEl) paidEl.textContent='₹'+paid.toFixed(2);
+  } catch(e){ console.warn('processWr error',e); showToast('Error: '+e.message,true); if(btn1) btn1.disabled=false; if(btn2) btn2.disabled=false; }
+};
+
+window.adminGiveCoins=async function(){
+  const amt=parseInt(document.getElementById('gc-amt').value)||0;
+  const selEl=document.getElementById('gc-user-sel'); const targetUid=selEl?selEl.value:'';
+  if(amt<100){ showToast('Minimum 100 coins!',true); return; }
+  if(!targetUid){ showToast('Select a user first!',true); return; }
+  try {
+    const ref=doc(db,'users',targetUid); const snap=await getDoc(ref);
+    if(!snap.exists()){ showToast('User not found!',true); return; }
+    const uData=snap.data();
+    await updateDoc(ref,{coins:(uData.coins||0)+amt,totalCoins:(uData.totalCoins||0)+amt,updatedAt:serverTimestamp()});
+    if(currentUser&&targetUid===currentUser.uid){ S.coins+=amt; S.totalCoins+=amt; updateCoinUI(); }
+    document.getElementById('gc-amt').value='';
+    showToast(`✅ Added ${amt.toLocaleString()} coins to ${escHtml(uData.username||uData.email||'user')}!`,false);
+    loadAdminDash();
+  } catch(e){ showToast('Error: '+e.message,true); }
+};
+
+window.adminBroadcastCoins=async function(){
+  const amt=parseInt(document.getElementById('bc-amt').value)||0;
+  const reason=document.getElementById('bc-reason').value.trim();
+  if(amt<10){ showToast('Minimum 10 coins to broadcast!',true); return; }
+  const progEl=document.getElementById('bc-progress'); const btn=document.getElementById('bc-btn');
+  if(!adminUsersCache.length){ showToast('Load users first (click Refresh)',true); return; }
+  btn.disabled=true; progEl.textContent=`⏳ Sending to 0 / ${adminUsersCache.length} users...`;
+  let done=0, failed=0;
+  for(const u of adminUsersCache){
     try {
-      const ref=doc(db,'users',targetUid);
-      const snap=await getDoc(ref);
-      if(!snap.exists()){ showToast('User not found!',true); return; }
-      const uData=snap.data();
-      await updateDoc(ref,{coins:(uData.coins||0)+amt,totalCoins:(uData.totalCoins||0)+amt,updatedAt:serverTimestamp()});
-      if(currentUser&&targetUid===currentUser.uid){ S.coins+=amt; S.totalCoins+=amt; updateCoinUI(); }
-      document.getElementById('gc-amt').value='';
-      showToast(`✅ Added ${amt.toLocaleString()} coins to ${escHtml(uData.username||uData.email||'user')}!`,false);
-      loadAdminDash();
-    } catch(e){ showToast('Error: '+e.message,true); }
-  };
+      const ref=doc(db,'users',u.id); const snap=await getDoc(ref);
+      if(snap.exists()){
+        const d=snap.data();
+        await updateDoc(ref,{coins:(d.coins||0)+amt,totalCoins:(d.totalCoins||0)+amt,updatedAt:serverTimestamp()});
+        await addDoc(collection(db,'users',u.id,'transactions'),{uid:u.id,email:u.email||'',username:u.username||'Player',coins:amt,rupees:'0.00',method:'reward',acc:'Admin Broadcast',name:'Reward',status:'approved',reason:reason||'Admin reward',date:new Date().toLocaleDateString('en-PK',{day:'2-digit',month:'short',year:'numeric'}),timestamp:Date.now(),createdAt:serverTimestamp()});
+        if(currentUser&&u.id===currentUser.uid){ S.coins+=amt; S.totalCoins+=amt; }
+      }
+      done++;
+    } catch(e){ failed++; }
+    progEl.textContent=`⏳ Sent to ${done} / ${adminUsersCache.length} users${failed?' ('+failed+' failed)':''}...`;
+  }
+  updateCoinUI(); btn.disabled=false;
+  document.getElementById('bc-amt').value=''; document.getElementById('bc-reason').value='';
+  progEl.textContent=`✅ Done! Sent ${amt.toLocaleString()} 🍭 to ${done} users${failed?' ('+failed+' failed)':''}`;
+  showToast(`✅ Broadcast sent to ${done} users!`,false);
+  setTimeout(()=>{ progEl.textContent=''; },5000);
+};
 
+// ============================================================
+//  DAILY CHECK-IN
+// ============================================================
+const CI_REWARDS=[50,75,100,150,200,250,500];
+const CI_LABELS=['Day 1','Day 2','Day 3','Day 4','Day 5','Day 6','Day 7'];
 
-  // ============================================================
-  //  BROADCAST REWARD COINS (Admin → All Users)
-  // ============================================================
-  window.adminBroadcastCoins = async function(){
-    const amt = parseInt(document.getElementById('bc-amt').value)||0;
-    const reason = document.getElementById('bc-reason').value.trim();
-    if(amt < 10){ showToast('Minimum 10 coins to broadcast!', true); return; }
-    const progEl = document.getElementById('bc-progress');
-    const btn = document.getElementById('bc-btn');
-    if(!adminUsersCache.length){ showToast('Load users first (click Refresh)', true); return; }
-    btn.disabled = true;
-    progEl.textContent = `⏳ Sending to 0 / ${adminUsersCache.length} users...`;
-    let done = 0, failed = 0;
-    for(const u of adminUsersCache){
-      try {
-        const ref = doc(db,'users',u.id);
-        const snap = await getDoc(ref);
-        if(snap.exists()){
-          const d = snap.data();
-          await updateDoc(ref,{
-            coins:(d.coins||0)+amt,
-            totalCoins:(d.totalCoins||0)+amt,
-            updatedAt:serverTimestamp()
-          });
-          // also add a transaction record
-          await addDoc(collection(db,'users',u.id,'transactions'),{
-            uid:u.id, email:u.email||'',
-            username:u.username||'Player',
-            coins:amt, rupees:'0.00',
-            method:'reward', acc:'Admin Broadcast',
-            name:'Reward', status:'approved',
-            reason: reason||'Admin reward',
-            date:new Date().toLocaleDateString('en-PK',{day:'2-digit',month:'short',year:'numeric'}),
-            timestamp:Date.now(), createdAt:serverTimestamp()
-          });
-          if(currentUser && u.id===currentUser.uid){ S.coins+=amt; S.totalCoins+=amt; }
-        }
-        done++;
-      } catch(e){ failed++; console.warn('broadcast err for',u.id,e); }
-      progEl.textContent = `⏳ Sent to ${done} / ${adminUsersCache.length} users${failed?' ('+failed+' failed)':''}...`;
-    }
+async function checkDailyCheckIn(){
+  if(!currentUser) return;
+  const today=new Date().toDateString();
+  const lastCi=S.lastCheckin||null;
+  if(lastCi===today) return;
+  renderCheckInPopup();
+  document.getElementById('checkinPopup').classList.add('open');
+}
+
+function getDayIndex(){ const streak=S.streak||1; return Math.min((streak-1)%7,6); }
+
+function renderCheckInPopup(){
+  const dayIdx=getDayIndex(); const reward=CI_REWARDS[dayIdx]; const streak=S.streak||1;
+  let daysHtml=CI_REWARDS.map((r,i)=>{
+    let cls='ci-day';
+    if(i<dayIdx) cls+=' claimed';
+    else if(i===dayIdx) cls+=' today';
+    else cls+=' future';
+    const emoji=i===6?'👑':'🍭';
+    return `<div class="${cls}"><div style="font-size:14px;">${emoji}</div><div class="ci-coins">${r}</div><div style="font-size:8px;margin-top:1px;">${CI_LABELS[i]}</div></div>`;
+  }).join('');
+  document.getElementById('ci-days').innerHTML=daysHtml;
+  const ciStreakEl=document.getElementById('ci-streak-txt');
+  if(ciStreakEl) ciStreakEl.textContent=`${streak} day streak 🔥`;
+  document.getElementById('ci-reward').textContent='+'+reward.toLocaleString()+' 🍭';
+  document.getElementById('ci-reward-label').textContent=`Day ${dayIdx+1} reward — Streak: ${streak} day${streak!==1?'s':''}`;
+  const btn=document.getElementById('ci-claim-btn');
+  btn.disabled=false; btn.textContent='🎁 CLAIM REWARD';
+}
+
+window.claimDailyCheckIn=async function(){
+  if(!currentUser) return;
+  const today=new Date().toDateString(); const dayIdx=getDayIndex(); const reward=CI_REWARDS[dayIdx];
+  const btn=document.getElementById('ci-claim-btn'); btn.disabled=true; btn.textContent='⏳ Claiming...';
+  try {
+    const ref=doc(db,'users',currentUser.uid);
+    const yesterday=new Date(Date.now()-86400000).toDateString();
+    const newStreak=(S.lastCheckin===yesterday)?(S.streak||1)+1:1;
+    S.coins+=reward; S.totalCoins+=reward; S.streak=newStreak; S.lastCheckin=today;
+    await updateDoc(ref,{coins:S.coins,totalCoins:S.totalCoins,streak:newStreak,lastCheckin:today,updatedAt:serverTimestamp()});
     updateCoinUI();
-    btn.disabled = false;
-    document.getElementById('bc-amt').value='';
-    document.getElementById('bc-reason').value='';
-    progEl.textContent = `✅ Done! Sent ${amt.toLocaleString()} 🪙 to ${done} users${failed?' ('+failed+' failed)':''}`;
-    showToast(`✅ Broadcast sent to ${done} users!`, false);
-    setTimeout(()=>{ progEl.textContent=''; }, 5000);
-  };
+    showToast(`🎁 +${reward} 🍭 Claimed!`,false);
+    btn.textContent='✅ Claimed!';
+    setTimeout(()=>{ document.getElementById('checkinPopup').classList.remove('open'); },1200);
+  } catch(e){ console.warn('checkin error',e); btn.disabled=false; btn.textContent='🎁 CLAIM REWARD'; showToast('Error claiming reward.',true); }
+};
+window.closeCheckin=function(){ document.getElementById('checkinPopup').classList.remove('open'); };
 
-  // ============================================================
-  //  DAILY CHECK-IN
-  // ============================================================
-  // Rewards: day 1→50, day 2→75, day 3→100, day 4→150, day 5→200, day 6→250, day 7→500
-  const CI_REWARDS = [50, 75, 100, 150, 200, 250, 500];
-  const CI_LABELS  = ['Day 1','Day 2','Day 3','Day 4','Day 5','Day 6','Day 7'];
+// ============================================================
+//  TOAST
+// ============================================================
+let toastTimer;
+window.showToast=function(msg,isErr=false){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='show'+(isErr?' err':'');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{ t.className=''; },2200);
+};
 
-  async function checkDailyCheckIn(){
-    if(!currentUser) return;
-    const today = new Date().toDateString();
-    const lastCi = S.lastCheckin || null;
-    if(lastCi === today) return; // already claimed today
-    // Show popup
-    renderCheckInPopup();
-    document.getElementById('checkinPopup').classList.add('open');
-  }
+// ============================================================
+//  WINDOW RESIZE → re-render board
+// ============================================================
+window.addEventListener('resize', ()=>{ if(document.getElementById('gameScreen').classList.contains('active')) renderBoard(); });
 
-  function getDayIndex(){
-    // Returns 0-6 based on streak (capped at 7-day cycle)
-    const streak = S.streak || 1;
-    return Math.min((streak - 1) % 7, 6);
-  }
-
-  function renderCheckInPopup(){
-    const dayIdx = getDayIndex();
-    const reward = CI_REWARDS[dayIdx];
-    const streak = S.streak || 1;
-
-    // Build day bubbles
-    let daysHtml = CI_REWARDS.map((r,i)=>{
-      let cls = 'ci-day';
-      if(i < dayIdx) cls += ' claimed';
-      else if(i === dayIdx) cls += ' today';
-      else cls += ' future';
-      const emoji = i===6 ? '👑' : '🪙';
-      return `<div class="${cls}"><div style="font-size:14px;">${emoji}</div><div class="ci-coins">${r}</div><div style="font-size:8px;margin-top:1px;">${CI_LABELS[i]}</div></div>`;
-    }).join('');
-
-    document.getElementById('ci-days').innerHTML = daysHtml;
-    const ciStreakEl = document.getElementById('ci-streak-txt');
-    if(ciStreakEl) ciStreakEl.textContent = `${streak} day streak 🔥`;
-    document.getElementById('ci-reward').textContent = '+' + reward.toLocaleString() + ' 🪙';
-    document.getElementById('ci-reward-label').textContent = `Day ${dayIdx+1} reward — Streak: ${streak} day${streak!==1?'s':''}`;
-    const btn = document.getElementById('ci-claim-btn');
-    btn.disabled = false;
-    btn.textContent = '🎁 CLAIM REWARD';
-  }
-
-  window.claimDailyCheckIn = async function(){
-    if(!currentUser) return;
-    const today = new Date().toDateString();
-    const dayIdx = getDayIndex();
-    const reward = CI_REWARDS[dayIdx];
-    const btn = document.getElementById('ci-claim-btn');
-    btn.disabled = true;
-    btn.textContent = '⏳ Claiming...';
-    try {
-      const ref = doc(db,'users',currentUser.uid);
-      // Update streak
-      const yesterday = new Date(Date.now()-86400000).toDateString();
-      const newStreak = (S.lastCheckin===yesterday) ? (S.streak||1)+1 : 1;
-      S.coins += reward;
-      S.totalCoins += reward;
-      S.streak = newStreak;
-      S.lastCheckin = today;
-      await updateDoc(ref,{
-        coins: S.coins,
-        totalCoins: S.totalCoins,
-        streak: newStreak,
-        lastCheckin: today,
-        updatedAt: serverTimestamp()
-      });
-      await addDoc(collection(db,'users',currentUser.uid,'transactions'),{
-        uid:currentUser.uid, email:currentUser.email,
-        username:S.username||'Player',
-        coins:reward, rupees:'0.00',
-        method:'checkin', acc:'Daily Check-In',
-        name:'Check-In Reward', status:'approved',
-        reason:`Day ${dayIdx+1} daily check-in`,
-        date:new Date().toLocaleDateString('en-PK',{day:'2-digit',month:'short',year:'numeric'}),
-        timestamp:Date.now(), createdAt:serverTimestamp()
-      });
-      updateCoinUI();
-      btn.textContent = '✅ Claimed!';
-      showToast(`🎁 +${reward.toLocaleString()} coins! Day ${dayIdx+1} streak!`, false);
-      setTimeout(()=>{ document.getElementById('checkinPopup').classList.remove('open'); }, 1600);
-    } catch(e){
-      btn.disabled = false;
-      btn.textContent = '🎁 CLAIM REWARD';
-      showToast('Error: '+e.message, true);
-    }
-  };
-
-  window.closeCheckin = function(){
-    document.getElementById('checkinPopup').classList.remove('open');
-  };
-
-  // ============================================================
-  //  TOAST
-  // ============================================================
-  let toastTimer;
-  window.showToast=function showToast(msg,isErr=false){
-    const t=document.getElementById('toast');
-    t.textContent=msg; t.className='toast show'+(isErr?' err':'');
-    clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2800);
-  };
-
-  // ============================================================
-  //  INIT
-  // ============================================================
-  window.addEventListener('load',()=>{
-    resize();
-    // show canvas background immediately
-    running=false; initGame(); render(); running=false;
-  });
 </script>
 </head>
 <body>
 
-<!-- CANVAS -->
-<canvas id="c"></canvas>
-
-<!-- HIT FLASH -->
-<div id="hitFlash"></div>
-
 <!-- FIREBASE STATUS -->
-<div id="fbStatus" class="offline">⚡ Connecting...</div>
-
-<!-- HUD -->
-<div id="ui">
-  <div id="hud">
-    <div class="hud-box">
-      <div class="hud-label">Score</div>
-      <div class="hud-score" id="scoreEl">0</div>
-    </div>
-    <div id="pauseBtn" onclick="togglePause()">⏸ PAUSE</div>
-    <div class="hud-right">
-      <div class="hud-box">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div>
-            <div class="hud-label">Coins</div>
-            <div class="hud-coins">🪙 <span id="coinEl">0</span></div>
-          </div>
-          <div id="multBox" style="display:none;">
-            <div class="hud-label">Mult</div>
-            <div class="hud-mult" id="multEl">x1</div>
-          </div>
-        </div>
-      </div>
-      <div id="livesBar">❤️❤️❤️</div>
-    </div>
-  </div>
-</div>
-
-<!-- POWER UPS BAR -->
-<div id="powerUps">
-  <div class="power-badge" id="pb-magnet">🧲 Magnet <div class="power-bar"><div class="power-fill" id="pf-magnet" style="background:#00E5FF;width:100%;"></div></div></div>
-  <div class="power-badge" id="pb-board">🛹 Board <div class="power-bar"><div class="power-fill" id="pf-board" style="background:#FFD700;width:100%;"></div></div></div>
-  <div class="power-badge" id="pb-boost">⚡ Boost <div class="power-bar"><div class="power-fill" id="pf-boost" style="background:#FF6B00;width:100%;"></div></div></div>
-</div>
-
-<!-- SWIPE HINT -->
-<div id="swipeHint">← Swipe lanes · ↑ Jump · ↓ Roll</div>
+<div id="fbStatus" style="display:none;"></div>
 
 <!-- ===== AUTH SCREEN ===== -->
-<div class="overlay" id="authScreen" style="display:flex;">
-  <div class="auth-logo">METRO RUSH</div>
-  <div class="auth-sub">Run · Dodge · Earn</div>
+<div id="authScreen">
+  <div class="auth-logo">🍭 CANDY CRUSH</div>
+  <div class="auth-sub">MATCH · EARN · WITHDRAW</div>
   <div class="auth-card">
     <div class="auth-tabs">
       <div class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">LOGIN</div>
       <div class="auth-tab" id="tab-reg" onclick="switchAuthTab('reg')">REGISTER</div>
     </div>
-
     <!-- Login Form -->
     <div id="loginForm">
-      <input type="email" class="auth-inp" id="login-email" placeholder="Email address">
-      <input type="password" class="auth-inp" id="login-pass" placeholder="Password" onkeydown="if(event.key==='Enter')authLogin()">
-      <button class="btn-auth" onclick="authLogin()">🔑 LOGIN</button>
+      <input class="auth-inp" id="login-email" type="email" placeholder="Email address" autocomplete="email">
+      <input class="auth-inp" id="login-pass" type="password" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')authLogin()">
+      <button class="btn-auth" onclick="authLogin()">🍭 LOGIN</button>
     </div>
-
     <!-- Register Form -->
     <div id="regForm" style="display:none;">
-      <input type="text" class="auth-inp" id="reg-name" placeholder="Display name (e.g. SpeedRunner99)">
-      <input type="email" class="auth-inp" id="reg-email" placeholder="Email address">
-      <input type="password" class="auth-inp" id="reg-pass" placeholder="Password (min 6 chars)" onkeydown="if(event.key==='Enter')authRegister()">
-      <button class="btn-auth" onclick="authRegister()">🚀 CREATE ACCOUNT</button>
+      <input class="auth-inp" id="reg-name" type="text" placeholder="Username (e.g. CandyKing)">
+      <input class="auth-inp" id="reg-email" type="email" placeholder="Email address" autocomplete="email">
+      <input class="auth-inp" id="reg-pass" type="password" placeholder="Password (min 6 chars)" autocomplete="new-password" onkeydown="if(event.key==='Enter')authRegister()">
+      <button class="btn-auth" onclick="authRegister()">🍭 REGISTER</button>
     </div>
-
     <div class="auth-spinner" id="auth-spinner"></div>
     <div class="auth-err" id="auth-err"></div>
   </div>
 </div>
 
-<!-- HOME SCREEN -->
-<div class="overlay hidden" id="homeScreen">
-  <div class="character-preview">🏎️</div>
-  <div class="game-logo">METRO RUSH</div>
-  <div class="game-sub">Run · Dodge · Earn</div>
-  <div class="home-user-tag" id="homeUserTag"></div>
-  <button class="btn-play" onclick="startGame()">PLAY</button>
-  <div class="coin-rate-tag">🪙 1000 Coins = ₹10 · Withdraw via EasyPaisa/JazzCash</div>
+<!-- ===== HOME SCREEN ===== -->
+<div id="homeScreen" class="hidden">
   <button class="btn-logout-home" onclick="authLogout()">Logout</button>
+  <div class="home-user-tag" id="homeUserTag">👤 Player</div>
+  <div class="game-logo">🍭 CANDY CRUSH</div>
+  <div class="game-sub">MATCH 3 · EARN COINS</div>
+  <div class="candy-preview">🍓🍊🍋🍏🫐🍇</div>
+  <button class="btn-play" onclick="startGame()">▶ PLAY</button>
+  <div class="coin-rate-tag">💰 10,000 🍭 = ₹1.00</div>
   <div class="home-nav">
-    <div class="home-nav-btn" onclick="openWallet()"><div class="ni">💰</div>WALLET</div>
+    <div class="home-nav-btn" onclick="openWallet()"><div class="ni">💸</div>WALLET</div>
     <div class="home-nav-btn" onclick="openProfile()"><div class="ni">👤</div>PROFILE</div>
-    <div id="adminNavBtn" class="home-nav-btn admin-only" onclick="openAdminLogin()"><div class="ni">🛡️</div>ADMIN</div>
   </div>
 </div>
 
-<!-- GAME OVER SCREEN -->
-<div class="overlay hidden" id="gameoverScreen">
-  <div class="go-title">BUSTED!</div>
+<!-- ===== GAME SCREEN ===== -->
+<div id="gameScreen">
+  <!-- HUD -->
+  <div id="ui">
+    <div id="hud">
+      <div class="hud-box">
+        <div class="hud-label">SCORE</div>
+        <div class="hud-score" id="scoreEl">0</div>
+      </div>
+      <div class="hud-box" style="text-align:center;">
+        <div class="hud-label" id="levelLabel">LEVEL 1</div>
+        <div class="hud-coins" style="justify-content:center;" id="coinEl">0</div>
+      </div>
+      <div class="hud-box hud-right">
+        <div class="hud-label">MOVES</div>
+        <div class="hud-moves" id="movesEl">30</div>
+      </div>
+    </div>
+  </div>
+  <!-- Progress -->
+  <div style="margin-top:62px;width:100%;display:flex;flex-direction:column;align-items:center;">
+    <div id="levelTarget" style="font-size:11px;color:rgba(255,255,255,0.5);text-align:center;margin-bottom:4px;letter-spacing:1px;">🎯 Target: 0 / 500</div>
+    <div id="levelBar"><div id="levelFill" style="width:0%;"></div></div>
+  </div>
+  <!-- Board -->
+  <div id="boardWrap">
+    <div id="candyBoard"></div>
+  </div>
+  <!-- Pause button -->
+  <button id="pauseBtn" onclick="togglePause()">⏸ PAUSE</button>
+</div>
+
+<!-- ===== GAME OVER SCREEN ===== -->
+<div id="gameoverScreen" class="overlay hidden">
+  <div class="go-title">GAME OVER</div>
   <div class="go-score">Score: <span id="goScore">0</span></div>
-  <div class="go-coins">+<span id="goCoins">0</span> 🪙 Coins Earned</div>
+  <div class="go-coins">🍭 Coins earned: <span id="goCoins">0</span></div>
   <div class="go-best" id="goBest"></div>
   <div class="go-btns">
-    <button class="btn-restart" onclick="startGame()">▶ PLAY AGAIN</button>
-    <button class="btn-wallet" onclick="showRewardAd()">📺 Watch Ad & Claim Coins</button>
-    <button class="btn-wallet" onclick="openWallet()">💰 Wallet & Withdraw</button>
+    <button class="btn-restart" onclick="startGame()">🍭 PLAY AGAIN</button>
+    <button class="btn-wallet" onclick="showRewardAd()">📺 Watch Ad +Coins</button>
+    <button class="btn-wallet" onclick="openWallet()">💸 Wallet</button>
     <button class="btn-wallet" onclick="showHome()">🏠 Home</button>
   </div>
 </div>
 
-<!-- PAUSE SCREEN -->
-<div class="overlay hidden" id="pauseScreen">
-  <div style="font-family:'Bangers',cursive;font-size:42px;color:var(--primary);margin-bottom:20px;letter-spacing:2px;">PAUSED</div>
-  <div class="go-btns">
-    <button class="btn-restart" onclick="resumeGame()">▶ RESUME</button>
-    <button class="btn-wallet" onclick="restartFromPause()">↩ RESTART</button>
-    <button class="btn-wallet" onclick="quitToHome()">🏠 HOME</button>
+<!-- ===== LEVEL COMPLETE ===== -->
+<div id="levelCompleteScreen">
+  <div class="lc-title" id="lcLevel">Level 1 Complete!</div>
+  <div class="lc-stars" id="lcStars">⭐⭐⭐</div>
+  <div class="lc-score" id="lcScore">Score: 0</div>
+  <div class="lc-coins" id="lcCoins">🍭 +0</div>
+  <div style="pointer-events:all;display:flex;flex-direction:column;gap:10px;align-items:center;">
+    <button class="btn-next" onclick="nextLevel()">NEXT LEVEL ▶</button>
+    <button class="btn-wallet" style="pointer-events:all;" onclick="openWallet()">💸 Wallet</button>
+    <button class="btn-wallet" style="pointer-events:all;" onclick="showHome()">🏠 Home</button>
   </div>
 </div>
 
@@ -1969,22 +1753,19 @@ canvas{display:block;position:absolute;top:0;left:0;}
 <div id="walletView">
   <div class="wv-header">
     <button class="wv-back" onclick="closeWallet()">‹</button>
-    <div class="wv-title">💰 WALLET</div>
+    <div class="wv-title">💸 WALLET</div>
   </div>
   <div class="wv-hero">
-    <div class="wv-bal-label">Available Balance</div>
-    <div class="wv-bal">₹<span id="wv-bal">0.00</span></div>
-    <div class="wv-bal-sub">Pakistani Rupees</div>
-    <div class="wv-coin-tag">🪙 <span id="wv-coins">0</span> Total Coins</div>
+    <div class="wv-bal-label">Your Balance</div>
+    <div class="wv-bal" id="wv-balance">₹0.00</div>
+    <div class="wv-bal-sub">Ready to withdraw</div>
+    <div class="wv-coin-tag">🍭 <span id="wv-coins">0</span> Candy Coins</div>
   </div>
   <div class="rate-card">
-    <div class="ri">📊</div>
-    <div>
-      <div class="rv">1000 Coins = ₹10</div>
-      <div class="rt">Minimum withdrawal: 5000 Coins = ₹50</div>
-    </div>
+    <div class="ri">💱</div>
+    <div><div class="rt">Conversion Rate</div><div class="rv">10,000 🍭 = ₹1.00</div></div>
   </div>
-  <div class="sec-head">💸 Request Withdrawal</div>
+  <div class="sec-head">💸 Withdraw</div>
   <div class="wd-card">
     <div class="inp-group">
       <label class="inp-label">Coins to Withdraw</label>
@@ -2008,7 +1789,7 @@ canvas{display:block;position:absolute;top:0;left:0;}
       <input type="text" class="inp-field" id="wd-name" placeholder="Full name">
     </div>
     <div class="wd-preview">You will receive: <span id="wd-preview">₹0.00</span></div>
-    <button class="btn-wd" onclick="submitWithdrawal()">💸 WITHDRAW NOW</button>
+    <button class="btn-wd" onclick="requestWithdrawal()">💸 WITHDRAW NOW</button>
   </div>
   <div class="sec-head">📋 My Transactions</div>
   <div id="txList" style="padding-bottom:20px;"></div>
@@ -2021,10 +1802,10 @@ canvas{display:block;position:absolute;top:0;left:0;}
     <div class="wv-title">👤 PROFILE</div>
   </div>
   <div class="pv-hero">
-    <div class="pv-avatar">🏎️</div>
-    <div class="pv-name" id="pv-name">Metro Runner</div>
+    <div class="pv-avatar">🍭</div>
+    <div class="pv-name" id="pv-name">Candy Player</div>
     <div class="pv-id" id="pv-uid">@player</div>
-    <div class="pv-level">⚡ Level <span id="pv-lvl">1</span> Runner</div>
+    <div class="pv-level">⚡ Level <span id="pv-lvl">1</span> Crusher</div>
   </div>
   <div class="stats-grid">
     <div class="stat-c"><div class="stat-v" id="ps-best">0</div><div class="stat-l">Best Score</div></div>
@@ -2032,26 +1813,25 @@ canvas{display:block;position:absolute;top:0;left:0;}
     <div class="stat-c"><div class="stat-v" id="ps-games">0</div><div class="stat-l">Games</div></div>
     <div class="stat-c"><div class="stat-v" id="ps-wd">₹0</div><div class="stat-l">Withdrawn</div></div>
     <div class="stat-c"><div class="stat-v" id="ps-streak">0</div><div class="stat-l">Streak</div></div>
-    <div class="stat-c"><div class="stat-v" id="ps-dist">0m</div><div class="stat-l">Distance</div></div>
+    <div class="stat-c"><div class="stat-v" id="ps-level">1</div><div class="stat-l">Level</div></div>
   </div>
   <div class="sec-head" style="margin:4px 14px 8px;">🏆 Achievements</div>
-  <div class="ach-item"><div class="ach-ico">🎮</div><div><div class="ach-nm">First Run</div><div class="ach-ds">Complete your first game</div></div><div class="ach-badge" id="a1">Locked</div></div>
-  <div class="ach-item"><div class="ach-ico">🪙</div><div><div class="ach-nm">Coin Collector</div><div class="ach-ds">Earn 1000 coins total</div></div><div class="ach-badge" id="a2">Locked</div></div>
-  <div class="ach-item"><div class="ach-ico">🚀</div><div><div class="ach-nm">Speed Demon</div><div class="ach-ds">Score 5000+ in one run</div></div><div class="ach-badge" id="a3">Locked</div></div>
+  <div class="ach-item"><div class="ach-ico">🎮</div><div><div class="ach-nm">First Crush</div><div class="ach-ds">Complete your first game</div></div><div class="ach-badge" id="a1">Locked</div></div>
+  <div class="ach-item"><div class="ach-ico">🍭</div><div><div class="ach-nm">Coin Collector</div><div class="ach-ds">Earn 1000 coins total</div></div><div class="ach-badge" id="a2">Locked</div></div>
+  <div class="ach-item"><div class="ach-ico">🚀</div><div><div class="ach-nm">Score Master</div><div class="ach-ds">Score 5000+ in one game</div></div><div class="ach-badge" id="a3">Locked</div></div>
   <div class="ach-item"><div class="ach-ico">💸</div><div><div class="ach-nm">First Cashout</div><div class="ach-ds">Request first withdrawal</div></div><div class="ach-badge" id="a4">Locked</div></div>
-  <div class="ach-item"><div class="ach-ico">🛹</div><div><div class="ach-nm">Board Master</div><div class="ach-ds">Use hoverboard 5 times</div></div><div class="ach-badge" id="a5">Locked</div></div>
+  <div class="ach-item"><div class="ach-ico">🍬</div><div><div class="ach-nm">Level Master</div><div class="ach-ds">Clear 5 levels</div></div><div class="ach-badge" id="a5">Locked</div></div>
   <div class="sec-head" style="margin:8px 14px 8px;">🏅 Leaderboard</div>
   <div id="leaderboardList" style="padding-bottom:6px;"></div>
   <div class="sec-head" style="margin:8px 14px 8px;">⚙️ More</div>
   <div id="adminMenuBtn" class="menu-it admin-only" onclick="openAdminLogin()"><div class="mi-ic">🛡️</div><div class="mi-lb">Admin Panel</div><div class="mi-ar">›</div></div>
-  <div class="menu-it" onclick="showToast('Coming soon!',false)"><div class="mi-ic">👥</div><div class="mi-lb">Invite Friends (+500 🪙)</div><div class="mi-ar">›</div></div>
-  <div class="menu-it" onclick="showToast('Support: @Metro_Rush_Bot',false)"><div class="mi-ic">💬</div><div class="mi-lb">Support</div><div class="mi-ar">›</div></div>
+  <div class="menu-it" onclick="showToast('Coming soon!',false)"><div class="mi-ic">👥</div><div class="mi-lb">Invite Friends (+500 🍭)</div><div class="mi-ar">›</div></div>
+  <div class="menu-it" onclick="showToast('Support: @CandyCrush_Bot',false)"><div class="mi-ic">💬</div><div class="mi-lb">Support</div><div class="mi-ar">›</div></div>
   <div class="menu-it" onclick="authLogout()"><div class="mi-ic">🚪</div><div class="mi-lb">Logout</div><div class="mi-ar">›</div></div>
 </div>
 
 <!-- ===== ADMIN VIEW ===== -->
 <div id="adminView">
-  <!-- Login -->
   <div id="aLoginWrap" style="display:flex;flex-direction:column;">
     <div class="av-header">
       <div>🛡️</div>
@@ -2067,7 +1847,6 @@ canvas{display:block;position:absolute;top:0;left:0;}
       <div id="al-err" style="color:#FF3366;font-size:13px;font-weight:700;min-height:20px;margin-top:4px;"></div>
     </div>
   </div>
-  <!-- Dashboard -->
   <div id="aDashWrap" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
     <div class="av-header">
       <div>🛡️</div>
@@ -2079,27 +1858,18 @@ canvas{display:block;position:absolute;top:0;left:0;}
       <button class="av-back" onclick="adminLogout()">✕</button>
     </div>
     <div style="overflow-y:auto;flex:1;padding-bottom:30px;">
-      <!-- Stats -->
       <div class="ad-stats">
         <div class="ad-stat"><div class="ad-sv" id="ad-users">—</div><div class="ad-sl">Total Users</div></div>
         <div class="ad-stat"><div class="ad-sv" id="ad-pending">—</div><div class="ad-sl">Pending WR</div></div>
         <div class="ad-stat"><div class="ad-sv" id="ad-paid">₹—</div><div class="ad-sl">Total Paid</div></div>
         <div class="ad-stat"><div class="ad-sv" id="ad-games">—</div><div class="ad-sl">Games Played</div></div>
       </div>
-
-      <!-- Users List -->
       <div class="ad-sec-head">👥 Registered Users</div>
-      <div id="ad-users-list" class="ad-users-list" style="max-height:300px;overflow-y:auto;padding:0 14px;margin-bottom:6px;"></div>
-
-      <!-- Pending Withdrawals -->
+      <div id="ad-users-list" class="ad-users-list" style="margin-bottom:6px;"></div>
       <div class="ad-sec-head" style="margin-top:14px;">⏳ Pending Withdrawals</div>
       <div id="ad-pendingList"></div>
-
-      <!-- Processed -->
       <div class="ad-sec-head">✅ Processed</div>
       <div id="ad-processedList"></div>
-
-      <!-- Give Coins -->
       <div class="ad-sec-head">🎁 Give Coins to User</div>
       <div class="gc-card">
         <label style="font-size:11px;color:rgba(255,255,255,0.4);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Select User</label>
@@ -2109,11 +1879,9 @@ canvas{display:block;position:absolute;top:0;left:0;}
         <input type="number" class="gc-inp" id="gc-amt" placeholder="Coin amount (min 100)">
         <button class="gc-btn" onclick="adminGiveCoins()">➕ ADD COINS</button>
       </div>
-
-      <!-- Broadcast Reward Coins -->
       <div class="ad-sec-head" style="margin-top:14px;">🎁 Broadcast Reward to ALL Users</div>
       <div class="bc-card">
-        <div class="bc-desc">Send coins to every registered user at once. Great for events, milestones, or promotions. This updates every user's wallet in Firestore.</div>
+        <div class="bc-desc">Send coins to every registered user at once. Great for events, milestones, or promotions.</div>
         <div class="bc-row">
           <input type="number" class="bc-inp" id="bc-amt" placeholder="Coins (min 10)" min="10">
           <input type="text" class="bc-inp" id="bc-reason" placeholder="Reason (e.g. Event reward)">
@@ -2121,7 +1889,6 @@ canvas{display:block;position:absolute;top:0;left:0;}
         <button class="bc-btn" id="bc-btn" onclick="adminBroadcastCoins()">📡 SEND TO ALL USERS</button>
         <div class="bc-progress" id="bc-progress"></div>
       </div>
-
     </div>
   </div>
 </div>
@@ -2133,7 +1900,7 @@ canvas{display:block;position:absolute;top:0;left:0;}
     <div class="ci-sub">COME BACK EVERY DAY FOR BIGGER REWARDS</div>
     <div class="ci-streak-info">🔥 <span id="ci-streak-txt">Loading streak...</span></div>
     <div class="ci-days" id="ci-days"></div>
-    <div class="ci-reward" id="ci-reward">+0 🪙</div>
+    <div class="ci-reward" id="ci-reward">+0 🍭</div>
     <div class="ci-reward-label" id="ci-reward-label">Today's reward</div>
     <button class="ci-btn" id="ci-claim-btn" onclick="claimDailyCheckIn()">🎁 CLAIM REWARD</button>
     <div class="ci-skip" onclick="closeCheckin()">Maybe later</div>
