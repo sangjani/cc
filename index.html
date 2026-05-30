@@ -1541,16 +1541,35 @@ let isAdminAuth=false;
 let adminUsersCache=[];
 const pendingWrData={};
 let pendingWrUnsubscribe=null;
+const ADMIN_EMAIL='saifistate@gmail.com';
+
 function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function adminLoading(el,msg){ if(el) el.innerHTML=`<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.4);font-size:13px;">⏳ ${msg||'Loading...'}</div>`; }
-function adminError(el,msg){ if(el) el.innerHTML=`<div style="text-align:center;padding:14px;color:#FF6B00;font-size:12px;border:1px solid rgba(255,107,0,0.3);border-radius:10px;margin:0 14px;">⚠️ ${escHtml(msg)}</div>`; }
+function adminLoading(el,msg){ if(el) el.innerHTML=`<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.4);font-size:13px;">⏳ ${escHtml(msg||'Loading...')}</div>`; }
+function adminError(el,msg){
+  if(!el) return;
+  el.innerHTML=`<div style="padding:12px 14px;color:#FF6B00;font-size:12px;border:1px solid rgba(255,107,0,0.3);border-radius:10px;margin:0 14px;line-height:1.7;">
+    ⚠️ ${escHtml(msg)}<br>
+    <span style="color:rgba(255,255,255,0.35);font-size:11px;">Fix: Go to Firebase Console → Firestore → Rules and add the admin rules below, then tap 🔄 Refresh.</span><br>
+    <code style="font-size:10px;color:#FFD700;background:rgba(0,0,0,0.4);padding:6px 8px;border-radius:6px;display:block;margin-top:6px;white-space:pre-wrap;">match /users/{uid} {
+  allow read, write: if request.auth.token.email == '${ADMIN_EMAIL}';
+  allow read, write: if request.auth.uid == uid;
+}
+match /withdrawalRequests/{id} {
+  allow read, write: if request.auth.token.email == '${ADMIN_EMAIL}';
+  allow create: if request.auth != null;
+}
+match /leaderboard/{uid} {
+  allow read, write: if request.auth != null;
+}</code>
+  </div>`;
+}
 
 window.openAdminLogin=function(){
-  if(!currentUser||currentUser.email!=='saifistate@gmail.com'){ showToast('Access denied.',true); return; }
+  if(!currentUser||currentUser.email!==ADMIN_EMAIL){ showToast('Access denied.',true); return; }
   document.getElementById('adminView').classList.add('open');
   document.getElementById('aLoginWrap').style.display='none';
-  document.getElementById('aDashWrap').style.display='flex';
-  document.getElementById('aDashWrap').style.flexDirection='column';
+  const dash=document.getElementById('aDashWrap');
+  dash.style.display='flex'; dash.style.flexDirection='column'; dash.style.flex='1';
   isAdminAuth=true;
   loadAdminDash();
 };
@@ -1559,93 +1578,144 @@ window.closeAdmin=function(){
   if(pendingWrUnsubscribe){ pendingWrUnsubscribe(); pendingWrUnsubscribe=null; }
 };
 window.checkPin=function(){};
-window.adminLogout=function(){ isAdminAuth=false; if(pendingWrUnsubscribe){ pendingWrUnsubscribe(); pendingWrUnsubscribe=null; } closeAdmin(); };
+window.adminLogout=function(){
+  isAdminAuth=false;
+  if(pendingWrUnsubscribe){ pendingWrUnsubscribe(); pendingWrUnsubscribe=null; }
+  closeAdmin();
+};
 window.adminRefresh=function(){ if(isAdminAuth) loadAdminDash(); };
 
-async function loadAdminDash(){
-  adminLoading(document.getElementById('ad-users-list'),'Loading users...');
-  adminLoading(document.getElementById('ad-pendingList'),'Loading...');
-  adminLoading(document.getElementById('ad-processedList'),'Loading...');
-  ['ad-users','ad-pending','ad-paid','ad-games'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent='...'; });
+// ── Load users (independent, never blocks withdrawals) ────────
+async function loadAdminUsers(){
+  const listEl=document.getElementById('ad-users-list');
+  const usersEl=document.getElementById('ad-users');
+  const gamesEl=document.getElementById('ad-games');
+  adminLoading(listEl,'Loading users...');
+
+  // Strategy 1: full collection read (needs admin Firestore rule)
   try {
-    let usersLoaded=false;
-    let usersError='';
-    try {
-      const usersSnap=await getDocs(collection(db,'users'));
-      adminUsersCache=usersSnap.docs.map(d=>({id:d.id,...d.data()}));
-      usersLoaded=true;
-    } catch(e1){
-      usersError=e1.message||'Permission denied';
-      // Fallback: collect known UIDs from leaderboard + current user
-      const uidSet=new Set();
-      if(currentUser) uidSet.add(currentUser.uid);
-      try{ const lb=await getDocs(collection(db,'leaderboard')); lb.docs.forEach(d=>uidSet.add(d.id)); }catch(e){}
-      if(uidSet.size>0){
-        const fetches=await Promise.allSettled([...uidSet].map(uid=>getDoc(doc(db,'users',uid))));
-        adminUsersCache=fetches.filter(r=>r.status==='fulfilled'&&r.value.exists()).map(r=>({id:r.value.id,...r.value.data()}));
-        if(adminUsersCache.length>0){
-          usersLoaded=true;
-          usersError=''; // fallback succeeded
-          showToast('⚠️ Loaded partial users via fallback. Update Firestore rules for full access.',true);
-        }
-      }
+    const snap=await getDocs(collection(db,'users'));
+    adminUsersCache=snap.docs.map(d=>({id:d.id,...d.data()}));
+    populateUsersUI();
+    return;
+  } catch(e1){
+    console.warn('Full users read blocked:',e1.code||e1.message);
+  }
+
+  // Strategy 2: collect UIDs from withdrawalRequests + leaderboard + current user
+  try {
+    const uidSet=new Set();
+    if(currentUser) uidSet.add(currentUser.uid);
+    try{ const wr=await getDocs(collection(db,'withdrawalRequests')); wr.docs.forEach(d=>{ if(d.data().uid) uidSet.add(d.data().uid); if(d.data().userDocId) uidSet.add(d.data().userDocId); }); }catch(e){}
+    try{ const lb=await getDocs(collection(db,'leaderboard')); lb.docs.forEach(d=>uidSet.add(d.id)); }catch(e){}
+
+    if(uidSet.size>0){
+      const fetches=await Promise.allSettled([...uidSet].map(uid=>getDoc(doc(db,'users',uid))));
+      adminUsersCache=fetches.filter(r=>r.status==='fulfilled'&&r.value.exists()).map(r=>({id:r.value.id,...r.value.data()}));
     }
-    if(usersLoaded){
-      const usersEl=document.getElementById('ad-users'); if(usersEl) usersEl.textContent=adminUsersCache.length;
-      const totalGames=adminUsersCache.reduce((s,u)=>s+(u.gamesPlayed||0),0);
-      const gamesEl=document.getElementById('ad-games'); if(gamesEl) gamesEl.textContent=totalGames;
-      renderAdminUsers();
-      const sel=document.getElementById('gc-user-sel');
-      if(sel){ const sorted=[...adminUsersCache].sort((a,b)=>(b.coins||0)-(a.coins||0)); sel.innerHTML='<option value="">— Select user —</option>'+sorted.map(u=>`<option value="${escHtml(u.id)}">${escHtml(u.username||u.email||'Unknown')} · 🪙${(u.coins||0).toLocaleString()}</option>`).join(''); }
-    } else {
-      throw new Error(usersError||'Could not load users — check Firestore security rules allow admin read on /users');
+
+    if(adminUsersCache.length>0){
+      populateUsersUI();
+      const warn=document.createElement('div');
+      warn.style.cssText='font-size:10px;color:#FF9900;text-align:center;padding:4px 14px 8px;';
+      warn.textContent='⚠️ Partial user list — add Firestore admin rules for full access';
+      listEl.parentNode.insertBefore(warn, listEl);
+      return;
     }
-  } catch(e){ adminError(document.getElementById('ad-users-list'),e.message||'Cannot load users. Check Firestore rules.'); ['ad-users','ad-games'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent='ERR'; }); }
+    throw new Error('No users found. Add Firestore admin rules to read all users.');
+  } catch(e2){
+    adminError(listEl, e2.message||'Cannot load users. Check Firestore rules.');
+    if(usersEl) usersEl.textContent='ERR';
+    if(gamesEl) gamesEl.textContent='ERR';
+  }
+}
+
+function populateUsersUI(){
+  const usersEl=document.getElementById('ad-users');
+  const gamesEl=document.getElementById('ad-games');
+  if(usersEl) usersEl.textContent=adminUsersCache.length;
+  const totalGames=adminUsersCache.reduce((s,u)=>s+(u.gamesPlayed||0),0);
+  if(gamesEl) gamesEl.textContent=totalGames;
+  renderAdminUsers();
+  // Populate give-coins dropdown
+  const sel=document.getElementById('gc-user-sel');
+  if(sel){
+    const sorted=[...adminUsersCache].sort((a,b)=>(b.coins||0)-(a.coins||0));
+    sel.innerHTML='<option value="">— Select user —</option>'+sorted.map(u=>`<option value="${escHtml(u.id)}">${escHtml(u.username||u.email||'Unknown')} · 🪙${(u.coins||0).toLocaleString()}</option>`).join('');
+  }
+}
+
+// ── Load withdrawals (independent, never blocks users) ─────────
+async function loadAdminWithdrawals(){
+  const pendEl2=document.getElementById('ad-pendingList');
+  const procEl=document.getElementById('ad-processedList');
+  adminLoading(pendEl2,'Loading withdrawal requests...');
+  adminLoading(procEl,'Loading...');
 
   try {
-    const wrSnap=await getDocs(query(collection(db,'withdrawalRequests')));
+    const wrSnap=await getDocs(collection(db,'withdrawalRequests'));
     const all=wrSnap.docs.map(d=>({id:d.id,...d.data()}));
     const pending=all.filter(r=>r.status==='pending').sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
     const processed=all.filter(r=>r.status!=='pending').sort((a,b)=>(b.timestamp||0)-(a.timestamp||0)).slice(0,50);
     const approved=all.filter(r=>r.status==='approved');
-    const pendEl=document.getElementById('ad-pending'); if(pendEl) pendEl.textContent=pending.length;
+
+    const pendCountEl=document.getElementById('ad-pending'); if(pendCountEl) pendCountEl.textContent=pending.length;
     const paid=approved.reduce((s,r)=>s+parseFloat(r.rupees||0),0);
     const paidEl=document.getElementById('ad-paid'); if(paidEl) paidEl.textContent='₹'+paid.toFixed(2);
+
+    // Populate pendingWrData map
     pending.forEach(r=>{ pendingWrData[r.id]=r; });
-    renderPendingList(pending); renderProcessedList(processed); setupPendingListener();
-  } catch(e){ adminError(document.getElementById('ad-pendingList'),'Cannot load withdrawals.'); ['ad-pending','ad-paid'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent='ERR'; }); }
+
+    renderPendingList(pending);
+    renderProcessedList(processed);
+    setupPendingListener();
+  } catch(e){
+    console.error('loadAdminWithdrawals error:',e);
+    adminError(pendEl2, 'Cannot load withdrawals: '+(e.code==='permission-denied'?'Permission denied — add Firestore admin rules.':e.message));
+    ['ad-pending','ad-paid'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent='ERR'; });
+    adminLoading(procEl,'Could not load processed list.');
+  }
+}
+
+// ── Main dash loader — runs both independently ─────────────────
+async function loadAdminDash(){
+  ['ad-users','ad-pending','ad-paid','ad-games'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent='...'; });
+  // Run independently so one failure doesn't block the other
+  await Promise.allSettled([loadAdminUsers(), loadAdminWithdrawals()]);
 }
 
 function setupPendingListener(){
   if(pendingWrUnsubscribe) pendingWrUnsubscribe();
   const q=query(collection(db,'withdrawalRequests'),where('status','==','pending'));
   pendingWrUnsubscribe=onSnapshot(q,(snap)=>{
-    // Rebuild the full pending map from snapshot
     const freshIds=new Set();
     snap.docs.forEach(d=>{ pendingWrData[d.id]={id:d.id,...d.data()}; freshIds.add(d.id); });
-    // Remove any entries that are no longer pending
     Object.keys(pendingWrData).forEach(k=>{ if(!freshIds.has(k)) delete pendingWrData[k]; });
     const pending=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
-    const pendEl=document.getElementById('ad-pending'); if(pendEl) pendEl.textContent=pending.length;
+    const pendCountEl=document.getElementById('ad-pending'); if(pendCountEl) pendCountEl.textContent=pending.length;
     renderPendingList(pending);
-  },(err)=>{ console.warn('pending listener error',err); });
+  },(err)=>{
+    console.warn('pending listener error:',err.code||err.message);
+    if(err.code==='permission-denied'){
+      adminError(document.getElementById('ad-pendingList'),'Real-time listener blocked. Add Firestore admin rules, then tap 🔄 Refresh.');
+    }
+  });
 }
 
 function renderAdminUsers(){
   const el=document.getElementById('ad-users-list'); if(!el) return;
   const cntEl=document.getElementById('ad-users-count'); if(cntEl) cntEl.textContent=adminUsersCache.length+' users';
-  // Reset search
   const srch=document.getElementById('ad-user-search'); if(srch) srch.value='';
   if(!adminUsersCache.length){ el.innerHTML='<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:13px;">No users registered yet</div>'; return; }
   const sorted=[...adminUsersCache].sort((a,b)=>(b.totalCoins||0)-(a.totalCoins||0));
-  el.innerHTML=sorted.map(u=>`<div class="user-row"><div style="flex:1;min-width:0;"><div class="user-row-email" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(u.username||'Unknown')}</div><div class="user-row-info" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(u.email||u.id||'')}</div><div style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:1px;">Games:${u.gamesPlayed||0} · Best:${(u.bestScore||0).toLocaleString()}</div></div><div class="user-row-coins" style="margin-left:8px;white-space:nowrap;">🪙${(u.coins||0).toLocaleString()}</div></div>`).join('');
+  el.innerHTML=sorted.map(u=>`<div class="user-row"><div style="flex:1;min-width:0;"><div class="user-row-email" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(u.username||'Unknown')}</div><div class="user-row-info" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(u.email||u.id||'')}</div><div style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:1px;">Games:${u.gamesPlayed||0} · Best:${(u.bestScore||0).toLocaleString()} · Level:${u.level||1}</div></div><div class="user-row-coins" style="margin-left:8px;white-space:nowrap;">🪙${(u.coins||0).toLocaleString()}</div></div>`).join('');
 }
 
 window.filterAdminUsers=function(q){
   const el=document.getElementById('ad-users-list'); if(!el) return;
   const term=(q||'').toLowerCase().trim();
   if(!term){ renderAdminUsers(); return; }
-  const filtered=adminUsersCache.filter(u=>(u.username||'').toLowerCase().includes(term)||(u.email||'').toLowerCase().includes(term));
+  const filtered=adminUsersCache.filter(u=>(u.username||'').toLowerCase().includes(term)||(u.email||'').toLowerCase().includes(term)||(u.id||'').toLowerCase().includes(term));
   if(!filtered.length){ el.innerHTML='<div style="text-align:center;padding:14px;color:rgba(255,255,255,0.3);font-size:13px;">No users match</div>'; return; }
   const sorted=[...filtered].sort((a,b)=>(b.totalCoins||0)-(a.totalCoins||0));
   el.innerHTML=sorted.map(u=>`<div class="user-row"><div style="flex:1;min-width:0;"><div class="user-row-email" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(u.username||'Unknown')}</div><div class="user-row-info" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(u.email||u.id||'')}</div><div style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:1px;">Games:${u.gamesPlayed||0} · Best:${(u.bestScore||0).toLocaleString()}</div></div><div class="user-row-coins" style="margin-left:8px;white-space:nowrap;">🪙${(u.coins||0).toLocaleString()}</div></div>`).join('');
@@ -1767,49 +1837,95 @@ window.processWr=async function(wrId,action){
 
 window.adminGiveCoins=async function(){
   const amt=parseInt(document.getElementById('gc-amt').value)||0;
-  const selEl=document.getElementById('gc-user-sel'); const targetUid=selEl?selEl.value:'';
-  if(amt<100){ showToast('Minimum 100 coins!',true); return; }
+  const selEl=document.getElementById('gc-user-sel');
+  const targetUid=selEl?selEl.value.trim():'';
+  if(amt<1){ showToast('Enter a valid coin amount!',true); return; }
   if(!targetUid){ showToast('Select a user first!',true); return; }
+  const gcBtn=document.querySelector('.gc-btn');
+  if(gcBtn){ gcBtn.disabled=true; gcBtn.textContent='⏳ Adding...'; }
   try {
-    const ref=doc(db,'users',targetUid); const snap=await getDoc(ref);
-    if(!snap.exists()){ showToast('User not found!',true); return; }
+    const ref=doc(db,'users',targetUid);
+    const snap=await getDoc(ref);
+    if(!snap.exists()){ showToast('User not found in database!',true); return; }
     const uData=snap.data();
-    await updateDoc(ref,{coins:(uData.coins||0)+amt,totalCoins:(uData.totalCoins||0)+amt,updatedAt:serverTimestamp()});
-    if(currentUser&&targetUid===currentUser.uid){ S.coins+=amt; S.totalCoins+=amt; updateCoinUI(); }
+    const newCoins=(uData.coins||0)+amt;
+    const newTotal=(uData.totalCoins||0)+amt;
+    await updateDoc(ref,{coins:newCoins,totalCoins:newTotal,updatedAt:serverTimestamp()});
+    // Update local cache
+    const cached=adminUsersCache.find(u=>u.id===targetUid);
+    if(cached){ cached.coins=newCoins; cached.totalCoins=newTotal; }
+    // Update self if needed
+    if(currentUser&&targetUid===currentUser.uid){ S.coins=newCoins; S.totalCoins=newTotal; save(); updateCoinUI(); }
     document.getElementById('gc-amt').value='';
-    const targetName=escHtml(uData.username||uData.email||'user');
-    showToast(`✅ Added ${amt.toLocaleString()} coins to ${targetName}!`,false);
     if(selEl) selEl.value='';
-    loadAdminDash();
-  } catch(e){ showToast('Error: '+e.message,true); }
+    const targetName=uData.username||uData.email||'user';
+    showToast(`✅ Added ${amt.toLocaleString()} coins to ${targetName}!`,false);
+    // Refresh just the user list display and dropdown
+    populateUsersUI();
+  } catch(e){
+    console.error('adminGiveCoins error:',e);
+    showToast('❌ Error: '+(e.code==='permission-denied'?'Permission denied — check Firestore rules.':e.message),true);
+  } finally {
+    if(gcBtn){ gcBtn.disabled=false; gcBtn.textContent='➕ ADD COINS'; }
+  }
 };
 
 window.adminBroadcastCoins=async function(){
   const amt=parseInt(document.getElementById('bc-amt').value)||0;
   const reason=document.getElementById('bc-reason').value.trim();
   if(amt<10){ showToast('Minimum 10 coins to broadcast!',true); return; }
-  const progEl=document.getElementById('bc-progress'); const btn=document.getElementById('bc-btn');
-  if(!adminUsersCache.length){ showToast('Load users first (click Refresh)',true); return; }
-  btn.disabled=true; progEl.textContent=`⏳ Sending to 0 / ${adminUsersCache.length} users...`;
+  if(!reason){ showToast('Please enter a reason for the broadcast.',true); return; }
+  if(!adminUsersCache.length){ showToast('No users loaded — tap 🔄 Refresh first.',true); return; }
+  if(!confirm(`Send ${amt.toLocaleString()} 🍭 to ALL ${adminUsersCache.length} users?\nReason: ${reason}`)) return;
+
+  const progEl=document.getElementById('bc-progress');
+  const btn=document.getElementById('bc-btn');
+  btn.disabled=true;
   let done=0, failed=0;
+  const errors=[];
+  const dateStr=new Date().toLocaleDateString('en-PK',{day:'2-digit',month:'short',year:'numeric'});
+
   for(const u of adminUsersCache){
+    progEl.textContent=`⏳ Processing ${done+failed+1} / ${adminUsersCache.length}...`;
     try {
-      const ref=doc(db,'users',u.id); const snap=await getDoc(ref);
-      if(snap.exists()){
-        const d=snap.data();
-        await updateDoc(ref,{coins:(d.coins||0)+amt,totalCoins:(d.totalCoins||0)+amt,updatedAt:serverTimestamp()});
-        await addDoc(collection(db,'users',u.id,'transactions'),{uid:u.id,email:u.email||'',username:u.username||'Player',coins:amt,rupees:'0.00',method:'reward',acc:'Admin Broadcast',name:'Reward',status:'approved',reason:reason||'Admin reward',date:new Date().toLocaleDateString('en-PK',{day:'2-digit',month:'short',year:'numeric'}),timestamp:Date.now(),createdAt:serverTimestamp()});
-        if(currentUser&&u.id===currentUser.uid){ S.coins+=amt; S.totalCoins+=amt; }
-      }
+      const ref=doc(db,'users',u.id);
+      const snap=await getDoc(ref);
+      if(!snap.exists()){ failed++; errors.push(`${u.username||u.id}: not found`); continue; }
+      const d=snap.data();
+      const newCoins=(d.coins||0)+amt;
+      const newTotal=(d.totalCoins||0)+amt;
+      await updateDoc(ref,{coins:newCoins,totalCoins:newTotal,updatedAt:serverTimestamp()});
+      await addDoc(collection(db,'users',u.id,'transactions'),{
+        uid:u.id,email:u.email||'',username:u.username||'Player',
+        coins:amt,rupees:'0.00',method:'reward',acc:'Admin Broadcast',
+        name:'Admin Reward',status:'approved',reason:reason,
+        date:dateStr,timestamp:Date.now(),createdAt:serverTimestamp()
+      });
+      // Update local cache
+      const cached=adminUsersCache.find(c=>c.id===u.id);
+      if(cached){ cached.coins=newCoins; cached.totalCoins=newTotal; }
+      if(currentUser&&u.id===currentUser.uid){ S.coins=newCoins; S.totalCoins=newTotal; }
       done++;
-    } catch(e){ failed++; }
-    progEl.textContent=`⏳ Sent to ${done} / ${adminUsersCache.length} users${failed?' ('+failed+' failed)':''}...`;
+    } catch(e){
+      failed++;
+      errors.push(`${u.username||u.id}: ${e.code||e.message}`);
+      console.warn('broadcast fail for',u.id,e);
+    }
   }
-  updateCoinUI(); btn.disabled=false;
-  document.getElementById('bc-amt').value=''; document.getElementById('bc-reason').value='';
-  progEl.textContent=`✅ Done! Sent ${amt.toLocaleString()} 🍭 to ${done} users${failed?' ('+failed+' failed)':''}`;
-  showToast(`✅ Broadcast sent to ${done} users!`,false);
-  setTimeout(()=>{ progEl.textContent=''; },5000);
+
+  updateCoinUI();
+  btn.disabled=false;
+  document.getElementById('bc-amt').value='';
+  document.getElementById('bc-reason').value='';
+
+  if(failed>0){
+    progEl.innerHTML=`<span style="color:#27AE60;">✅ Sent to ${done}</span> · <span style="color:#FF6B00;">❌ Failed: ${failed}</span>`;
+    console.warn('Broadcast failures:',errors);
+  } else {
+    progEl.textContent=`✅ Done! Sent ${amt.toLocaleString()} 🍭 to all ${done} users.`;
+  }
+  showToast(`✅ Broadcast complete: ${done} sent${failed?', '+failed+' failed':''}`,failed>0);
+  setTimeout(()=>{ progEl.textContent=''; },6000);
 };
 
 // ============================================================
