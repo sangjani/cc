@@ -2,10 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Fruit Crush - Earn Money</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800;900&display=swap');
+/* Fonts loaded via <link> in <head> for faster paint */
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 :root{
   --primary:#7C3AED;--secondary:#A855F7;--accent:#EC4899;
@@ -44,7 +50,7 @@ body{
 .auth-card{
   background:rgba(255,255,255,0.9);border:1px solid rgba(124,58,237,0.15);
   border-radius:22px;padding:24px 20px;width:90%;max-width:340px;
-  box-shadow:0 20px 60px rgba(124,58,237,0.15);backdrop-filter:blur(20px);
+  box-shadow:0 20px 60px rgba(124,58,237,0.15);
 }
 .auth-tabs{display:flex;gap:0;margin-bottom:20px;background:rgba(124,58,237,0.08);border-radius:12px;padding:3px;}
 .auth-tab{
@@ -81,11 +87,11 @@ body{
 #fbStatus{
   position:fixed;bottom:10px;right:10px;
   font-size:10px;padding:4px 10px;border-radius:20px;z-index:999;
-  background:rgba(0,0,0,0.5);border:1px solid;
+  background:rgba(255,255,255,0.85);border:1px solid;
   pointer-events:none;
 }
-#fbStatus.online{color:#00FF88;border-color:rgba(0,255,136,0.3);}
-#fbStatus.offline{color:#FF6B00;border-color:rgba(255,107,0,0.3);}
+#fbStatus.online{color:#059669;border-color:rgba(5,150,105,0.3);}
+#fbStatus.offline{color:#DC2626;border-color:rgba(220,38,38,0.3);}
 
 /* HOME */
 #homeScreen{
@@ -162,7 +168,7 @@ body{
 .bc-inp{flex:1;min-width:100px;background:rgba(124,58,237,0.04);border:1px solid rgba(124,58,237,0.18);border-radius:10px;padding:10px 12px;color:#1E1B4B;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;outline:none;}
 .bc-inp:focus{border-color:var(--primary);}
 .bc-btn{background:linear-gradient(135deg,#FFD700,#FF6B00);color:#000;border:none;border-radius:10px;padding:10px 18px;font-family:'Bangers',cursive;font-size:16px;letter-spacing:1px;cursor:pointer;white-space:nowrap;}
-.bc-progress{margin-top:8px;font-size:11px;color:rgba(255,255,255,0.4);text-align:center;min-height:16px;}
+.bc-progress{margin-top:8px;font-size:11px;color:rgba(30,27,75,0.5);text-align:center;min-height:16px;}
 
 /* ===== DAILY CHECK-IN ===== */
 #checkinPopup{
@@ -188,7 +194,7 @@ body{
   background:rgba(124,58,237,0.06);border:1px solid rgba(124,58,237,0.15);
   font-size:9px;color:rgba(30,27,75,0.5);font-weight:700;letter-spacing:0.5px;text-transform:uppercase;transition:all 0.2s;
 }
-.ci-day .ci-coins{font-family:'Bangers',cursive;font-size:13px;color:rgba(255,255,255,0.4);}
+.ci-day .ci-coins{font-family:'Bangers',cursive;font-size:13px;color:rgba(30,27,75,0.5);}
 .ci-day.claimed{background:rgba(39,174,96,0.1);border-color:rgba(39,174,96,0.3);}
 .ci-day.claimed .ci-coins{color:#27AE60;}
 .ci-day.today{background:rgba(124,58,237,0.12);border-color:rgba(124,58,237,0.4);
@@ -205,7 +211,7 @@ body{
   box-shadow:0 4px 20px rgba(124,58,237,0.3);transition:transform 0.15s;margin-bottom:10px;
 }
 .ci-btn:active{transform:scale(0.97);}
-.ci-btn:disabled{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.3);box-shadow:none;cursor:default;}
+.ci-btn:disabled{background:rgba(124,58,237,0.08);color:rgba(30,27,75,0.3);box-shadow:none;cursor:default;}
 .ci-skip{font-size:12px;color:rgba(30,27,75,0.35);cursor:pointer;text-decoration:underline;padding:4px 8px;}
 .ci-streak-info{
   display:inline-flex;align-items:center;gap:6px;margin-bottom:16px;
@@ -468,20 +474,20 @@ body{
 .pv-id{font-size:12px;color:rgba(30,27,75,0.45);margin-bottom:6px;}
 .pv-level{font-size:13px;color:#7C3AED;font-weight:700;}
 .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 16px 16px;}
-.stat-c{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:12px;text-align:center;}
+.stat-c{background:rgba(255,255,255,0.85);border:1px solid rgba(124,58,237,0.1);border-radius:14px;padding:12px;text-align:center;}
 .stat-v{font-family:'Bangers',cursive;font-size:22px;color:#F5A623;}
-.stat-l{font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;text-transform:uppercase;letter-spacing:0.5px;}
-.ach-item{display:flex;align-items:center;gap:12px;margin:0 14px 8px;padding:12px 14px;background:rgba(255,255,255,0.75);border:1px solid rgba(124,58,237,0.1);border-radius:14px;}
+.stat-l{font-size:10px;color:rgba(30,27,75,0.45);margin-top:2px;text-transform:uppercase;letter-spacing:0.5px;}
+.ach-item{display:flex;align-items:center;gap:12px;margin:0 14px 8px;padding:12px 14px;background:rgba(255,255,255,0.85);border:1px solid rgba(124,58,237,0.1);border-radius:14px;}
 .ach-ico{font-size:26px;}
 .ach-nm{font-size:13px;font-weight:700;color:#1E1B4B;}
 .ach-ds{font-size:11px;color:rgba(30,27,75,0.45);}
-.ach-badge{font-size:10px;font-weight:700;color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.05);border-radius:8px;padding:4px 10px;white-space:nowrap;}
+.ach-badge{font-size:10px;font-weight:700;color:rgba(30,27,75,0.45);background:rgba(124,58,237,0.06);border-radius:8px;padding:4px 10px;white-space:nowrap;}
 .ach-badge.done{color:#27AE60;background:rgba(39,174,96,0.1);}
 .menu-it{display:flex;align-items:center;gap:12px;margin:0 14px 8px;padding:14px;background:rgba(255,255,255,0.75);border:1px solid rgba(124,58,237,0.1);border-radius:14px;cursor:pointer;}
-.menu-it:active{background:rgba(255,255,255,0.07);}
+.menu-it:active{background:rgba(124,58,237,0.08);}
 .mi-ic{font-size:22px;}
 .mi-lb{font-size:14px;font-weight:700;flex:1;}
-.mi-ar{font-size:18px;color:rgba(255,255,255,0.25);}
+.mi-ar{font-size:18px;color:rgba(30,27,75,0.3);}
 
 /* ===== ADMIN VIEW ===== */
 #adminView{
@@ -514,11 +520,11 @@ body{
 .al-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;gap:14px;}
 .al-wrap h2{font-family:'Bangers',cursive;font-size:28px;color:#7C3AED;letter-spacing:1px;}
 .al-wrap p{font-size:13px;color:rgba(30,27,75,0.5);text-align:center;}
-.al-pin{width:100%;max-width:260px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,51,102,0.3);border-radius:14px;padding:14px;color:#fff;font-family:'Nunito',sans-serif;font-size:22px;text-align:center;outline:none;letter-spacing:10px;}
-.al-btn{background:linear-gradient(135deg,#C2185B,#990020);color:#fff;border:none;border-radius:14px;padding:14px 50px;font-family:'Bangers',cursive;font-size:22px;letter-spacing:2px;cursor:pointer;box-shadow:0 4px 20px rgba(194,24,91,0.4);}
+.al-pin{width:100%;max-width:260px;background:rgba(124,58,237,0.04);border:1px solid rgba(124,58,237,0.25);border-radius:14px;padding:14px;color:#1E1B4B;font-family:'Nunito',sans-serif;font-size:22px;text-align:center;outline:none;letter-spacing:10px;}
+.al-btn{background:linear-gradient(135deg,#7C3AED,#EC4899);color:#fff;border:none;border-radius:14px;padding:14px 50px;font-family:'Bangers',cursive;font-size:22px;letter-spacing:2px;cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,0.3);}
 .gc-card{margin:0 14px 14px;background:rgba(255,255,255,0.8);border:1px solid rgba(124,58,237,0.12);border-radius:14px;padding:14px;}
 .gc-inp{width:100%;background:rgba(124,58,237,0.04);border:1px solid rgba(124,58,237,0.2);border-radius:12px;padding:12px 14px;color:#1E1B4B;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;outline:none;margin-bottom:10px;}
-.gc-btn{width:100%;background:linear-gradient(135deg,#C2185B,#E8630A);color:#fff;border:none;border-radius:12px;padding:12px;font-family:'Bangers',cursive;font-size:18px;letter-spacing:1px;cursor:pointer;box-shadow:0 4px 16px rgba(194,24,91,0.4);}
+.gc-btn{width:100%;background:linear-gradient(135deg,#7C3AED,#EC4899);color:#fff;border:none;border-radius:12px;padding:12px;font-family:'Bangers',cursive;font-size:18px;letter-spacing:1px;cursor:pointer;box-shadow:0 4px 16px rgba(124,58,237,0.3);}
 .user-selector-wrap{margin:0 0 10px;}
 .user-selector{width:100%;background:rgba(124,58,237,0.04);border:1px solid rgba(124,58,237,0.2);border-radius:12px;padding:10px 14px;color:#1E1B4B;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;outline:none;}
 .user-selector option{background:#fff;color:#1E1B4B;}
@@ -557,7 +563,7 @@ body{
 .modal-box h3{font-family:'Bangers',cursive;font-size:22px;letter-spacing:1px;margin-bottom:8px;color:#1E1B4B;}
 .modal-box p{font-size:13px;color:rgba(30,27,75,0.55);margin-bottom:20px;line-height:1.6;}
 .modal-acts{display:flex;gap:10px;}
-.modal-acts .mb1{flex:1;background:linear-gradient(135deg,#C2185B,#E8630A);color:#fff;border:none;border-radius:12px;padding:12px;font-family:'Bangers',cursive;font-size:16px;letter-spacing:1px;cursor:pointer;}
+.modal-acts .mb1{flex:1;background:linear-gradient(135deg,#7C3AED,#EC4899);color:#fff;border:none;border-radius:12px;padding:12px;font-family:'Bangers',cursive;font-size:16px;letter-spacing:1px;cursor:pointer;}
 .modal-acts .mb2{flex:1;background:rgba(124,58,237,0.06);color:#7C3AED;border:1px solid rgba(124,58,237,0.18);border-radius:12px;padding:12px;font-weight:700;font-size:13px;cursor:pointer;}
 
 /* Leaderboard */
@@ -607,7 +613,7 @@ body{
 
 </style>
 
-<script src='//libtl.com/sdk.js' data-zone='11069622' data-sdk='show_11069622'></script>
+<!-- Ad SDK removed for faster load -->
 
 <!-- Firebase SDK -->
 <script type="module">
@@ -657,7 +663,7 @@ const fbTimeout = setTimeout(() => {
     const el = document.getElementById('fbStatus');
     if (el) { el.textContent = '❌ Cannot reach Firebase'; el.className = 'offline'; el.style.display = 'block'; }
   }
-}, 8000);
+}, 4000);
 
 onAuthStateChanged(auth, async (user) => {
   fbResolved = true;
@@ -1286,7 +1292,7 @@ async function endGame(){
   document.getElementById('gameoverScreen').classList.remove('hidden');
   checkAchs();
   if(navigator.vibrate) navigator.vibrate([100,50,100]);
-  try{ show_11069622({type:'inApp',inAppSettings:{frequency:60,capping:0.1,interval:30,timeout:5,everyPage:false}}); }catch(e){}
+  /* ad removed */
 }
 
 function showLevelComplete(){
@@ -1515,7 +1521,7 @@ window.confirmWd = async function(){
 function renderTx(){
   const el=document.getElementById('txList');
   if(!el) return;
-  if(!S.transactions||!S.transactions.length){ el.innerHTML='<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.3);font-size:13px;">No transactions yet</div>'; return; }
+  if(!S.transactions||!S.transactions.length){ el.innerHTML='<div style="text-align:center;padding:30px;color:rgba(30,27,75,0.4);font-size:13px;">No transactions yet</div>'; return; }
   el.innerHTML=S.transactions.map(tx=>`<div class="tx-item"><div class="tx-ico">💸</div><div style="flex:1;"><div class="tx-nm">${(tx.method||'').toUpperCase()} · ${tx.acc||''}</div><div class="tx-dt">${tx.date}</div></div><div style="text-align:right;"><div class="tx-amt">-₹${tx.rupees}</div><div class="tx-st ${tx.status}">${(tx.status||'pending').toUpperCase()}</div></div></div>`).join('');
 }
 
@@ -1555,10 +1561,10 @@ async function loadLeaderboard(){
     const items=snap.docs.map((d,i)=>{
       const data=d.data(); const medal=i<3?rankClasses[i]:'';
       const isSelf=currentUser&&d.id===currentUser.uid;
-      return `<div class="lb-item" style="${isSelf?'border-color:rgba(255,51,102,0.3);background:rgba(255,51,102,0.05);':''}"><div class="lb-rank ${medal}">#${i+1}</div><div class="lb-name">${data.username||'Player'}${isSelf?' (You)':''}</div><div class="lb-score">${(data.score||0).toLocaleString()}</div></div>`;
+      return `<div class="lb-item" style="${isSelf?'border-color:rgba(124,58,237,0.3);background:rgba(124,58,237,0.05);':''}"><div class="lb-rank ${medal}">#${i+1}</div><div class="lb-name">${data.username||'Player'}${isSelf?' (You)':''}</div><div class="lb-score">${(data.score||0).toLocaleString()}</div></div>`;
     }).join('');
     const lbEl=document.getElementById('leaderboardList');
-    if(lbEl) lbEl.innerHTML=items||'<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">No scores yet</div>';
+    if(lbEl) lbEl.innerHTML=items||'<div style="text-align:center;padding:20px;color:rgba(30,27,75,0.4);">No scores yet</div>';
   } catch(e){ console.warn('leaderboard error',e); }
 }
 
@@ -1581,12 +1587,12 @@ let pendingWrUnsubscribe=null;
 const ADMIN_EMAIL='saifistate@gmail.com';
 
 function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function adminLoading(el,msg){ if(el) el.innerHTML=`<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.4);font-size:13px;">⏳ ${escHtml(msg||'Loading...')}</div>`; }
+function adminLoading(el,msg){ if(el) el.innerHTML=`<div style="text-align:center;padding:20px;color:rgba(30,27,75,0.45);font-size:13px;">⏳ ${escHtml(msg||'Loading...')}</div>`; }
 function adminError(el,msg){
   if(!el) return;
-  el.innerHTML=`<div style="padding:12px 14px;color:#FF6B00;font-size:12px;border:1px solid rgba(255,107,0,0.3);border-radius:10px;margin:0 14px;line-height:1.7;">
+  el.innerHTML=`<div style="padding:12px 14px;color:#B45309;font-size:12px;border:1px solid rgba(180,83,9,0.3);border-radius:10px;margin:0 14px;background:rgba(255,255,255,0.8);line-height:1.7;">
     ⚠️ ${escHtml(msg)}<br>
-    <span style="color:rgba(255,255,255,0.35);font-size:11px;">Fix: Go to Firebase Console → Firestore → Rules and add the admin rules below, then tap 🔄 Refresh.</span><br>
+    <span style="color:rgba(30,27,75,0.5);font-size:11px;">Fix: Go to Firebase Console → Firestore → Rules and add the admin rules below, then tap 🔄 Refresh.</span><br>
     <code style="font-size:10px;color:#FFD700;background:rgba(0,0,0,0.4);padding:6px 8px;border-radius:6px;display:block;margin-top:6px;white-space:pre-wrap;">match /users/{uid} {
   allow read, write: if request.auth.token.email == '${ADMIN_EMAIL}';
   allow read, write: if request.auth.uid == uid;
@@ -1757,9 +1763,9 @@ function renderAdminUsers(){
   const el=document.getElementById('ad-users-list'); if(!el) return;
   const cntEl=document.getElementById('ad-users-count'); if(cntEl) cntEl.textContent=adminUsersCache.length+' users';
   const srch=document.getElementById('ad-user-search'); if(srch) srch.value='';
-  if(!adminUsersCache.length){ el.innerHTML='<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:13px;">No users registered yet</div>'; return; }
+  if(!adminUsersCache.length){ el.innerHTML='<div style="text-align:center;padding:20px;color:rgba(30,27,75,0.4);font-size:13px;">No users registered yet</div>'; return; }
   const sorted=[...adminUsersCache].sort((a,b)=>(b.totalCoins||0)-(a.totalCoins||0));
-  el.innerHTML=sorted.map(u=>`<div class="user-row"><div style="flex:1;min-width:0;"><div class="user-row-email" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(u.username||'Unknown')}</div><div class="user-row-info" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(u.email||u.id||'')}</div><div style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:1px;">Games:${u.gamesPlayed||0} · Best:${(u.bestScore||0).toLocaleString()} · Level:${u.level||1}</div></div><div class="user-row-coins" style="margin-left:8px;white-space:nowrap;">🪙${(u.coins||0).toLocaleString()}</div></div>`).join('');
+  el.innerHTML=sorted.map(u=>`<div class="user-row"><div style="flex:1;min-width:0;"><div class="user-row-email" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(u.username||'Unknown')}</div><div class="user-row-info" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(u.email||u.id||'')}</div><div style="font-size:10px;color:rgba(30,27,75,0.35);margin-top:1px;">Games:${u.gamesPlayed||0} · Best:${(u.bestScore||0).toLocaleString()} · Level:${u.level||1}</div></div><div class="user-row-coins" style="margin-left:8px;white-space:nowrap;">🪙${(u.coins||0).toLocaleString()}</div></div>`).join('');
 }
 
 window.filterAdminUsers=function(q){
@@ -1767,16 +1773,16 @@ window.filterAdminUsers=function(q){
   const term=(q||'').toLowerCase().trim();
   if(!term){ renderAdminUsers(); return; }
   const filtered=adminUsersCache.filter(u=>(u.username||'').toLowerCase().includes(term)||(u.email||'').toLowerCase().includes(term)||(u.id||'').toLowerCase().includes(term));
-  if(!filtered.length){ el.innerHTML='<div style="text-align:center;padding:14px;color:rgba(255,255,255,0.3);font-size:13px;">No users match</div>'; return; }
+  if(!filtered.length){ el.innerHTML='<div style="text-align:center;padding:14px;color:rgba(30,27,75,0.4);font-size:13px;">No users match</div>'; return; }
   const sorted=[...filtered].sort((a,b)=>(b.totalCoins||0)-(a.totalCoins||0));
-  el.innerHTML=sorted.map(u=>`<div class="user-row"><div style="flex:1;min-width:0;"><div class="user-row-email" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(u.username||'Unknown')}</div><div class="user-row-info" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(u.email||u.id||'')}</div><div style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:1px;">Games:${u.gamesPlayed||0} · Best:${(u.bestScore||0).toLocaleString()}</div></div><div class="user-row-coins" style="margin-left:8px;white-space:nowrap;">🪙${(u.coins||0).toLocaleString()}</div></div>`).join('');
+  el.innerHTML=sorted.map(u=>`<div class="user-row"><div style="flex:1;min-width:0;"><div class="user-row-email" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(u.username||'Unknown')}</div><div class="user-row-info" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(u.email||u.id||'')}</div><div style="font-size:10px;color:rgba(30,27,75,0.35);margin-top:1px;">Games:${u.gamesPlayed||0} · Best:${(u.bestScore||0).toLocaleString()}</div></div><div class="user-row-coins" style="margin-left:8px;white-space:nowrap;">🪙${(u.coins||0).toLocaleString()}</div></div>`).join('');
 };
 
 function renderPendingList(pending){
   const pel=document.getElementById('ad-pendingList'); if(!pel) return;
   // Filter out any IDs that have already been processed in this session
   const filtered=pending.filter(r=>!_locallyProcessed.has(r.id));
-  if(!filtered.length){ pel.innerHTML='<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:13px;">No pending requests 🎉</div>'; return; }
+  if(!filtered.length){ pel.innerHTML='<div style="text-align:center;padding:20px;color:rgba(30,27,75,0.4);font-size:13px;">No pending requests 🎉</div>'; return; }
   // Only rebuild cards that don't already exist in the DOM (prevent flash/re-render)
   const existing=new Set();
   pel.querySelectorAll('[data-wrid]').forEach(el=>existing.add(el.getAttribute('data-wrid')));
@@ -1802,7 +1808,7 @@ function renderPendingList(pending){
 
 function renderProcessedList(processed){
   const prel=document.getElementById('ad-processedList'); if(!prel) return;
-  if(!processed.length){ prel.innerHTML='<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:13px;">No processed requests yet</div>'; return; }
+  if(!processed.length){ prel.innerHTML='<div style="text-align:center;padding:20px;color:rgba(30,27,75,0.4);font-size:13px;">No processed requests yet</div>'; return; }
   prel.innerHTML=processed.map(r=>`<div class="wr-card"><div class="wr-h"><div class="wr-user">👤 ${escHtml(r.name||r.username||'User')}</div><div class="wr-amt">₹${escHtml(String(r.rupees||0))}</div></div><div class="wr-det">📧 ${escHtml(r.email||'')}<br>📱 ${escHtml((r.method||'').toUpperCase())}: ${escHtml(r.acc||'')} · 📅 ${escHtml(r.date||'')}</div><div class="wr-done ${r.status==='approved'?'approved':'rejected'}">${r.status==='approved'?'✅ APPROVED & PAID':'❌ REJECTED'}</div></div>`).join('');
 }
 
@@ -2170,7 +2176,7 @@ window.addEventListener('resize', ()=>{ if(document.getElementById('gameScreen')
   </div>
   <!-- Progress -->
   <div style="margin-top:62px;width:100%;display:flex;flex-direction:column;align-items:center;">
-    <div id="levelTarget" style="font-size:11px;color:rgba(255,255,255,0.5);text-align:center;margin-bottom:4px;letter-spacing:1px;">🎯 Target: 0 / 500</div>
+    <div id="levelTarget" style="font-size:11px;color:rgba(30,27,75,0.5);text-align:center;margin-bottom:4px;letter-spacing:1px;">🎯 Target: 0 / 500</div>
     <div id="levelBar"><div id="levelFill" style="width:0%;"></div></div>
   </div>
   <!-- Board -->
@@ -2325,11 +2331,11 @@ window.addEventListener('resize', ()=>{ if(document.getElementById('gameScreen')
       </div>
       <div class="ad-sec-head" style="display:flex;align-items:center;justify-content:space-between;padding-right:14px;">
         <span>👥 Registered Users</span>
-        <span id="ad-users-count" style="font-size:10px;color:rgba(255,255,255,0.3);font-weight:400;letter-spacing:0;text-transform:none;"></span>
+        <span id="ad-users-count" style="font-size:10px;color:rgba(30,27,75,0.4);font-weight:400;letter-spacing:0;text-transform:none;"></span>
       </div>
       <div style="padding:0 14px 8px;">
         <input type="text" id="ad-user-search" placeholder="🔍 Search users..." oninput="filterAdminUsers(this.value)"
-          style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(194,24,91,0.3);border-radius:10px;padding:9px 14px;color:#fff;font-family:'Nunito',sans-serif;font-size:13px;font-weight:600;outline:none;">
+          style="width:100%;background:rgba(124,58,237,0.04);border:1px solid rgba(124,58,237,0.2);border-radius:10px;padding:9px 14px;color:#1E1B4B;font-family:'Nunito',sans-serif;font-size:13px;font-weight:600;outline:none;">
       </div>
       <div id="ad-users-list" class="ad-users-list" style="margin-bottom:6px;max-height:260px;overflow-y:auto;"></div>
       <div class="ad-sec-head" style="margin-top:14px;">⏳ Pending Withdrawals</div>
@@ -2338,7 +2344,7 @@ window.addEventListener('resize', ()=>{ if(document.getElementById('gameScreen')
       <div id="ad-processedList"></div>
       <div class="ad-sec-head">🎁 Give Coins to User</div>
       <div class="gc-card">
-        <label style="font-size:11px;color:rgba(255,255,255,0.4);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Select User</label>
+        <label style="font-size:11px;color:rgba(30,27,75,0.5);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Select User</label>
         <div class="user-selector-wrap" style="margin:0 0 10px;">
           <select class="user-selector" id="gc-user-sel"></select>
         </div>
