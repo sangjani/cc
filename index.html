@@ -1458,7 +1458,8 @@ window.closeModal = function(){ document.getElementById('modal').classList.remov
 window.confirmWd = async function(){
   if(!pendingWd||!currentUser){ closeModal(); return; }
   const {coins,method,acc,name,rupees}=pendingWd;
-  S.coins-=coins;
+  const wdBtn=document.querySelector('.mb1');
+  if(wdBtn){ wdBtn.disabled=true; wdBtn.textContent='⏳ Submitting...'; }
   const txData={
     uid:currentUser.uid,email:currentUser.email,username:S.username||'Player',
     coins,rupees,method,acc,name,status:'pending',
@@ -1466,17 +1467,35 @@ window.confirmWd = async function(){
     timestamp:Date.now(),createdAt:serverTimestamp()
   };
   try {
+    // Step 1: Save to user transactions subcollection
     const txRef=await addDoc(collection(db,'users',currentUser.uid,'transactions'),txData);
-    txData.id=txRef.id;
-    await addDoc(collection(db,'withdrawalRequests'),{...txData,userDocId:currentUser.uid,txId:txRef.id});
-  } catch(e){ console.warn('tx error',e); }
-  save(); closeModal(); updateCoinUI(); updateWalletUI();
-  document.getElementById('wd-coins').value='';
-  document.getElementById('wd-acc').value='';
-  document.getElementById('wd-name').value='';
-  document.getElementById('wd-preview').textContent='₹0.00';
-  showToast('✅ Withdrawal request submitted!',false);
-  checkAchs();
+    const txId=txRef.id;
+    // Step 2: Save to global withdrawalRequests — this is what admin reads
+    const wrRef=await addDoc(collection(db,'withdrawalRequests'),{
+      ...txData,
+      userDocId:currentUser.uid,
+      txId:txId,
+      id:undefined  // Firestore will auto-set, clear placeholder
+    });
+    console.log('Withdrawal saved. wrId=',wrRef.id,' txId=',txId);
+    // Deduct coins ONLY after successful write
+    S.coins-=coins;
+    save(); closeModal(); updateCoinUI(); updateWalletUI();
+    document.getElementById('wd-coins').value='';
+    document.getElementById('wd-acc').value='';
+    document.getElementById('wd-name').value='';
+    document.getElementById('wd-preview').textContent='₹0.00';
+    showToast('✅ Withdrawal request submitted!',false);
+    checkAchs();
+  } catch(e){
+    console.error('confirmWd error',e);
+    const msg=e.code==='permission-denied'
+      ?'Permission error — check Firestore rules allow users to write withdrawalRequests.'
+      :(e.message||'Unknown error');
+    showToast('❌ Failed to submit: '+msg,true);
+  } finally {
+    if(wdBtn){ wdBtn.disabled=false; wdBtn.textContent='Confirm'; }
+  }
 };
 
 function renderTx(){
@@ -1724,7 +1743,18 @@ window.filterAdminUsers=function(q){
 function renderPendingList(pending){
   const pel=document.getElementById('ad-pendingList'); if(!pel) return;
   if(!pending.length){ pel.innerHTML='<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:13px;">No pending requests 🎉</div>'; return; }
-  pel.innerHTML=pending.map(r=>`<div class="wr-card" data-wrid="${escHtml(r.id)}"><div class="wr-h"><div class="wr-user">👤 ${escHtml(r.name||r.username||'User')}</div><div class="wr-amt">₹${escHtml(String(r.rupees||0))}</div></div><div class="wr-det">📧 ${escHtml(r.email||'')}<br>📱 ${escHtml((r.method||'').toUpperCase())}: ${escHtml(r.acc||'')}<br>🍭 ${(r.coins||0).toLocaleString()} coins · 📅 ${escHtml(r.date||'')}</div><div class="wr-acts"><button class="btn-app" onclick="processWr('${escHtml(r.id)}','approved')">✅ APPROVE</button><button class="btn-rej" onclick="processWr('${escHtml(r.id)}','rejected')">❌ REJECT</button></div></div>`).join('');
+  pel.innerHTML='';
+  pending.forEach(function(r){
+    const card=document.createElement('div');
+    card.className='wr-card';
+    card.dataset.wrid=r.id;
+    card.innerHTML='<div class="wr-h"><div class="wr-user">👤 '+escHtml(r.name||r.username||'User')+'</div><div class="wr-amt">₹'+escHtml(String(r.rupees||0))+'</div></div>'
+      +'<div class="wr-det">📧 '+escHtml(r.email||'')+'<br>📱 '+escHtml((r.method||'').toUpperCase())+': '+escHtml(r.acc||'')+'<br>🍭 '+(r.coins||0).toLocaleString()+' coins · 📅 '+escHtml(r.date||'')+'</div>'
+      +'<div class="wr-acts"><button class="btn-app">✅ APPROVE</button><button class="btn-rej">❌ REJECT</button></div>';
+    card.querySelector('.btn-app').addEventListener('click', function(){ processWr(r.id,'approved'); });
+    card.querySelector('.btn-rej').addEventListener('click', function(){ processWr(r.id,'rejected'); });
+    pel.appendChild(card);
+  });
 }
 
 function renderProcessedList(processed){
@@ -1746,7 +1776,7 @@ window.processWr=async function(wrId,action){
     // ── Step 1: Always fetch fresh data directly from Firestore ──
     const wrDocRef=doc(db,'withdrawalRequests',wrId);
     const wrSnap=await getDoc(wrDocRef);
-    if(!wrSnap.exists()){ showToast('❌ Request not found in database.',true); if(btn1){btn1.disabled=false;btn1.textContent='✅ APPROVE';} if(btn2){btn2.disabled=false;btn2.textContent='❌ REJECT';} return; }
+    if(!wrSnap.exists()){ showToast('❌ Request not found in database. ID: '+wrId.substring(0,8)+'... — Try Refresh.',true); console.error('Doc missing, wrId=',wrId); if(btn1){btn1.disabled=false;btn1.textContent='✅ APPROVE';} if(btn2){btn2.disabled=false;btn2.textContent='❌ REJECT';} return; }
     const r={id:wrId,...wrSnap.data()};
 
     // Guard: already processed
