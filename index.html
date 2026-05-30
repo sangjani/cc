@@ -822,6 +822,44 @@ window.switchAuthTab = function(tab){
 // ============================================================
 //  ====  FRUIT CRUSH GAME ENGINE  ====
 // ============================================================
+
+// ── Haptics utility ─────────────────────────────────────────
+// Centralised haptic patterns for all gameplay events.
+// Falls back silently on devices that don't support vibration.
+const HAPTIC = {
+  // Single light tap – cell select
+  select:    ()=> _vib([18]),
+  // Short double knock – invalid swap / no match
+  noMatch:   ()=> _vib([30, 40, 30]),
+  // Crisp pop – successful 3-match
+  match3:    ()=> _vib([25]),
+  // Two pops – 4-match or striped candy created
+  match4:    ()=> _vib([25, 30, 40]),
+  // Triple pop – 5-match or color bomb created
+  match5:    ()=> _vib([20, 20, 35, 20, 55]),
+  // Rising cascade – chain combo
+  combo:     (n)=> _vib(Array.from({length:Math.min(n,6)},(_, i)=>[20+i*8,15]).flat().slice(0,-1)),
+  // Board shuffle
+  shuffle:   ()=> _vib([10,10,10,10,10,10,60]),
+  // Level complete – triumphant burst
+  levelDone: ()=> _vib([40, 30, 40, 30, 80, 50, 120]),
+  // Game over – descending thud
+  gameOver:  ()=> _vib([80, 40, 60, 40, 120]),
+  // Low moves warning (≤5 moves)
+  lowMoves:  ()=> _vib([15, 25, 15]),
+  // Daily check-in claim
+  checkIn:   ()=> _vib([30, 20, 30, 20, 60]),
+  // Button press (home / nav)
+  btn:       ()=> _vib([12]),
+  // Hint pulse
+  hint:      ()=> _vib([8, 60, 8]),
+  // Withdrawal submitted
+  withdraw:  ()=> _vib([50, 30, 50, 30, 100]),
+};
+function _vib(pattern){
+  try{ if(navigator.vibrate) navigator.vibrate(pattern); }catch(e){}
+}
+
 const COLS = 8, ROWS = 8;
 const FRUIT_TYPES = 6;
 const FRUIT_EMOJIS = ['🍓','🍊','🍋','🍏','🫐','🍇']; // red,orange,yellow,green,blue,purple
@@ -905,6 +943,7 @@ function onTouchEnd(e){
   const dx=t.clientX-touchStartX, dy=t.clientY-touchStartY;
   const threshold=20;
   if(Math.abs(dx)<threshold && Math.abs(dy)<threshold) return; // tap — handled by click
+  if(animating || !gameActive) return;
   let tr=touchStartRow, tc=touchStartCol;
   if(Math.abs(dx)>Math.abs(dy)){
     tc += dx>0 ? 1 : -1;
@@ -912,6 +951,7 @@ function onTouchEnd(e){
     tr += dy>0 ? 1 : -1;
   }
   if(tr>=0&&tr<ROWS&&tc>=0&&tc<COLS){
+    HAPTIC.select();
     selectedCell = {row:touchStartRow,col:touchStartCol};
     trySwap(tr,tc);
   }
@@ -922,6 +962,7 @@ function onCellClick(e){
   const r=+e.currentTarget.dataset.row, c=+e.currentTarget.dataset.col;
   if(!selectedCell){
     selectedCell={row:r,col:c};
+    HAPTIC.select();
     renderBoard();
     clearTimeout(hintTimeout);
     hintTimeout = setTimeout(showHint, 3000);
@@ -952,6 +993,7 @@ function trySwap(r,c){
     board[r][c]=tmp2;
     renderBoard();
     shakeCell(r1,c1);
+    HAPTIC.noMatch();
     showToast('No match!',true);
     return;
   }
@@ -973,7 +1015,7 @@ function getCellEl(r,c){
   return document.querySelector(`#candyBoard .candy-cell[data-row="${r}"][data-col="${c}"]`);
 }
 
-async function processMatches(matches){
+async function processMatches(matches, comboDepth=0){
   animating=true;
   clearTimeout(hintTimeout);
   // Calculate score with combo bonus
@@ -984,6 +1026,18 @@ async function processMatches(matches){
   totalCoinsThisGame += coinsThisMatch;
   S.coins += coinsThisMatch;
   S.totalCoins += coinsThisMatch;
+
+  // ── Haptics based on match size / combo depth ──────────────
+  if(comboDepth > 0){
+    HAPTIC.combo(comboDepth);
+  } else if(matches.length >= 5){
+    HAPTIC.match5();
+  } else if(matches.length === 4){
+    HAPTIC.match4();
+  } else {
+    HAPTIC.match3();
+  }
+
   // Show score pops
   const centers = getMatchCenters(matches);
   centers.forEach(({x,y,pts:p}) => spawnScorePop(x,y,p));
@@ -999,20 +1053,22 @@ async function processMatches(matches){
   const newMatches=findAllMatches();
   if(newMatches.length>0){
     await delay(100);
-    await processMatches(newMatches);
+    await processMatches(newMatches, comboDepth+1);
   } else {
     animating=false;
     updateHUD();
     updateProgressBar();
     save();
     updateCoinUI();
+    // Low moves warning
+    if(moves > 0 && moves <= 5) HAPTIC.lowMoves();
     // Check win/loss
     if(levelScore >= levelTarget){ setTimeout(showLevelComplete, 300); return; }
     if(moves<=0){ setTimeout(()=>{ endGame(); },300); return; }
     // Shuffle if no moves possible
-    if(!hasPossibleMoves()){ shuffleBoard(); showToast('🔀 Board shuffled!',false); }
+    if(!hasPossibleMoves()){ shuffleBoard(); HAPTIC.shuffle(); showToast('🔀 Board shuffled!',false); }
     // Hint
-    hintTimeout = setTimeout(showHint, 3000);
+    hintTimeout = setTimeout(()=>{ showHint(); HAPTIC.hint(); }, 3000);
   }
 }
 
@@ -1056,7 +1112,7 @@ function spawnScorePop(col,row,pts){
   pop.className='score-pop';
   pop.style.left=x+'px'; pop.style.top=y+'px';
   pop.style.setProperty('--dx',(Math.random()*40-20)+'px');
-  pop.style.setProperty('--dy','0px');
+  pop.style.setProperty('--dy',(-60 - Math.random()*30)+'px');
   pop.style.color = pts>=300?'#FFD700':pts>=160?'#FF9900':'#fff';
   pop.style.fontSize = pts>=300?'28px':pts>=160?'24px':'20px';
   pop.textContent='+'+pts;
@@ -1068,7 +1124,7 @@ function spawnScorePop(col,row,pts){
     cpop.className='score-pop';
     cpop.style.left=(x+10)+'px'; cpop.style.top=(y+18)+'px';
     cpop.style.setProperty('--dx',(Math.random()*30-15)+'px');
-    cpop.style.setProperty('--dy','0px');
+    cpop.style.setProperty('--dy',(-50 - Math.random()*20)+'px');
     cpop.style.color='#00FF88';
     cpop.style.fontSize='14px';
     cpop.textContent='🍉+'+Math.floor(pts/5);
@@ -1119,18 +1175,30 @@ function createSpecials(matches){
 }
 
 async function dropAndFill(){
-  // Drop existing candies down
+  // Track which cells are newly filled
+  const newCells = new Set();
   for(let c=0;c<COLS;c++){
     let emptyRow=ROWS-1;
     for(let r=ROWS-1;r>=0;r--){
-      if(board[r][c].type!==-1){ board[emptyRow][c]=board[r][c]; if(emptyRow!==r) board[r][c]={type:-1,special:null}; emptyRow--; }
+      if(board[r][c].type!==-1){
+        if(emptyRow!==r){ newCells.add(`${emptyRow},${c}`); }
+        board[emptyRow][c]=board[r][c];
+        if(emptyRow!==r) board[r][c]={type:-1,special:null};
+        emptyRow--;
+      }
     }
-    for(let r=emptyRow;r>=0;r--){ board[r][c]={type:randomType(),special:null}; }
+    for(let r=emptyRow;r>=0;r--){
+      board[r][c]={type:randomType(),special:null};
+      newCells.add(`${r},${c}`);
+    }
   }
   renderBoard();
-  // Animate fall
-  document.querySelectorAll('#candyBoard .candy-cell').forEach(el=>{ el.classList.add('falling'); });
-  await delay(280);
+  // Only animate newly placed / dropped cells
+  document.querySelectorAll('#candyBoard .candy-cell').forEach(el=>{
+    const key=`${el.dataset.row},${el.dataset.col}`;
+    if(newCells.has(key)) el.classList.add('falling');
+  });
+  await delay(320);
 }
 
 function findAllMatches(){
@@ -1168,16 +1236,18 @@ function hasPossibleMoves(){
   for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
     // swap right
     if(c+1<COLS){
-      const tmp=board[r][c]; board[r][c]=board[r][c+1]; board[r][c+1]=tmp;
+      const tA={...board[r][c]}, tB={...board[r][c+1]};
+      board[r][c]=tB; board[r][c+1]=tA;
       const m=findAllMatches().length>0;
-      const t2=board[r][c]; board[r][c]=board[r][c+1]; board[r][c+1]=t2;
+      board[r][c]=tA; board[r][c+1]=tB;
       if(m) return true;
     }
     // swap down
     if(r+1<ROWS){
-      const tmp=board[r][c]; board[r][c]=board[r+1][c]; board[r+1][c]=tmp;
+      const tA={...board[r][c]}, tB={...board[r+1][c]};
+      board[r][c]=tB; board[r+1][c]=tA;
       const m=findAllMatches().length>0;
-      const t2=board[r][c]; board[r][c]=board[r+1][c]; board[r+1][c]=t2;
+      board[r][c]=tA; board[r+1][c]=tB;
       if(m) return true;
     }
   }
@@ -1202,15 +1272,17 @@ function showHint(){
   // Find first valid swap
   for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
     if(c+1<COLS){
-      const tmp=board[r][c]; board[r][c]=board[r][c+1]; board[r][c+1]=tmp;
+      const tA={...board[r][c]}, tB={...board[r][c+1]};
+      board[r][c]=tB; board[r][c+1]=tA;
       const m=findAllMatches().length>0;
-      const t2=board[r][c]; board[r][c]=board[r][c+1]; board[r][c+1]=t2;
+      board[r][c]=tA; board[r][c+1]=tB;
       if(m){ getCellEl(r,c)?.classList.add('hint'); getCellEl(r,c+1)?.classList.add('hint'); return; }
     }
     if(r+1<ROWS){
-      const tmp=board[r][c]; board[r][c]=board[r+1][c]; board[r+1][c]=tmp;
+      const tA={...board[r][c]}, tB={...board[r+1][c]};
+      board[r][c]=tB; board[r+1][c]=tA;
       const m=findAllMatches().length>0;
-      const t2=board[r][c]; board[r][c]=board[r+1][c]; board[r+1][c]=t2;
+      board[r][c]=tA; board[r+1][c]=tB;
       if(m){ getCellEl(r,c)?.classList.add('hint'); getCellEl(r+1,c)?.classList.add('hint'); return; }
     }
   }
@@ -1225,7 +1297,7 @@ function updateHUD(){
   movesEl.textContent = moves;
   if(moves<=5){ movesEl.style.color='#FF3366'; movesEl.style.textShadow='0 0 12px rgba(255,51,102,0.8)'; }
   else if(moves<=10){ movesEl.style.color='#FF9900'; movesEl.style.textShadow='none'; }
-  else { movesEl.style.color='#FF9900'; movesEl.style.textShadow='none'; }
+  else { movesEl.style.color='#EC4899'; movesEl.style.textShadow='none'; }
   updateProgressBar();
 }
 function updateProgressBar(){
@@ -1281,17 +1353,18 @@ async function endGame(){
   S.coins += scoreBonusCoins; S.totalCoins += scoreBonusCoins;
   const coinsEarned = totalCoinsThisGame + scoreBonusCoins;
   S.gamesPlayed++;
-  if(score > S.bestScore) S.bestScore = score;
+  const isNewBest = score > S.bestScore;
+  if(isNewBest) S.bestScore = score;
   save();
   await updateLeaderboard(score);
   updateCoinUI();
   document.getElementById('goScore').textContent = score.toLocaleString();
   document.getElementById('goCoins').textContent = coinsEarned.toLocaleString();
-  document.getElementById('goBest').textContent = score>=S.bestScore?'🏆 New Best!':`Best: ${S.bestScore.toLocaleString()}`;
+  document.getElementById('goBest').textContent = isNewBest ? '🏆 New Best!' : `Best: ${S.bestScore.toLocaleString()}`;
   document.getElementById('pauseBtn').style.display = 'none';
   document.getElementById('gameoverScreen').classList.remove('hidden');
   checkAchs();
-  if(navigator.vibrate) navigator.vibrate([100,50,100]);
+  HAPTIC.gameOver();
   /* ad removed */
 }
 
@@ -1317,7 +1390,7 @@ function showLevelComplete(){
   document.getElementById('lcLevel').textContent = `Level ${currentLevel} Complete!`;
   document.getElementById('levelCompleteScreen').classList.add('open');
   checkAchs();
-  if(navigator.vibrate) navigator.vibrate([80,40,80,40,120]);
+  HAPTIC.levelDone();
 }
 
 window.nextLevel = function(){
@@ -1505,6 +1578,7 @@ window.confirmWd = async function(){
     document.getElementById('wd-name').value='';
     document.getElementById('wd-preview').textContent='₹0.00';
     showToast('✅ Withdrawal request submitted!',false);
+    HAPTIC.withdraw();
     checkAchs();
   } catch(e){
     console.error('confirmWd error',e);
@@ -2076,6 +2150,7 @@ window.claimDailyCheckIn=async function(){
   if(!currentUser) return;
   const today=new Date().toDateString(); const dayIdx=getDayIndex(); const reward=CI_REWARDS[dayIdx];
   const btn=document.getElementById('ci-claim-btn'); btn.disabled=true; btn.textContent='⏳ Claiming...';
+  HAPTIC.checkIn();
   try {
     const ref=doc(db,'users',currentUser.uid);
     const yesterday=new Date(Date.now()-86400000).toDateString();
@@ -2147,11 +2222,11 @@ window.addEventListener('resize', ()=>{ if(document.getElementById('gameScreen')
   <div class="game-logo">🍭 FRUIT CRUSH</div>
   <div class="game-sub">MATCH 3 · EARN COINS</div>
   <div class="candy-preview">🍓🍊🍋🍏🫐🍇</div>
-  <button class="btn-play" onclick="startGame()">▶ PLAY</button>
+  <button class="btn-play" onclick="HAPTIC.btn();startGame()">▶ PLAY</button>
   <div class="coin-rate-tag">💰 1,000 🍭 = ₹5.00</div>
   <div class="home-nav">
-    <div class="home-nav-btn" onclick="openWallet()"><div class="ni">💸</div>WALLET</div>
-    <div class="home-nav-btn" onclick="openProfile()"><div class="ni">👤</div>PROFILE</div>
+    <div class="home-nav-btn" onclick="HAPTIC.btn();openWallet()"><div class="ni">💸</div>WALLET</div>
+    <div class="home-nav-btn" onclick="HAPTIC.btn();openProfile()"><div class="ni">👤</div>PROFILE</div>
   </div>
 </div>
 
@@ -2194,7 +2269,7 @@ window.addEventListener('resize', ()=>{ if(document.getElementById('gameScreen')
   <div class="go-coins">🍉 Coins earned: <span id="goCoins">0</span></div>
   <div class="go-best" id="goBest"></div>
   <div class="go-btns">
-    <button class="btn-restart" onclick="startGame()">🍉 PLAY AGAIN</button>
+    <button class="btn-restart" onclick="HAPTIC.btn();startGame()">🍉 PLAY AGAIN</button>
     <button class="btn-wallet" onclick="showRewardAd()">📺 Watch Ad +Coins</button>
     <button class="btn-wallet" onclick="openWallet()">💸 Wallet</button>
     <button class="btn-wallet" onclick="showHome()">🏠 Home</button>
@@ -2208,7 +2283,7 @@ window.addEventListener('resize', ()=>{ if(document.getElementById('gameScreen')
   <div class="lc-score" id="lcScore">Score: 0</div>
   <div class="lc-coins" id="lcCoins">🍭 +0</div>
   <div style="pointer-events:all;display:flex;flex-direction:column;gap:10px;align-items:center;">
-    <button class="btn-next" onclick="nextLevel()">NEXT LEVEL ▶</button>
+    <button class="btn-next" onclick="HAPTIC.btn();nextLevel()">NEXT LEVEL ▶</button>
     <button class="btn-wallet" style="pointer-events:all;" onclick="openWallet()">💸 Wallet</button>
     <button class="btn-wallet" style="pointer-events:all;" onclick="showHome()">🏠 Home</button>
   </div>
