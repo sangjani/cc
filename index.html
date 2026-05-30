@@ -1446,6 +1446,9 @@ window.requestWithdrawal = function(){
   if(coins<20000){ showToast('Minimum 20,000 coins required!',true); return; }
   if(S.coins<coins){ showToast('Not enough coins!',true); return; }
   if(!acc||!name){ showToast('Fill all fields!',true); return; }
+  // Check if user already has a pending withdrawal request
+  const hasPending = S.transactions && S.transactions.some(tx => tx.status === 'pending');
+  if(hasPending){ showToast('⚠️ You already have a pending withdrawal. Wait for it to be processed.',true); return; }
   const rupees = (coins/200).toFixed(2);
   pendingWd={coins,method,acc,name,rupees};
   document.getElementById('m-title').textContent='Confirm Withdrawal';
@@ -1453,10 +1456,14 @@ window.requestWithdrawal = function(){
   document.getElementById('modal').classList.add('open');
 };
 
-window.closeModal = function(){ document.getElementById('modal').classList.remove('open'); };
+window.closeModal = function(){ document.getElementById('modal').classList.remove('open'); pendingWd=null; };
+
+let _wdSubmitting = false;
 
 window.confirmWd = async function(){
   if(!pendingWd||!currentUser){ closeModal(); return; }
+  if(_wdSubmitting){ return; } // prevent double-click / multi-tap
+  _wdSubmitting = true;
   const {coins,method,acc,name,rupees}=pendingWd;
   const wdBtn=document.querySelector('.mb1');
   if(wdBtn){ wdBtn.disabled=true; wdBtn.textContent='⏳ Submitting...'; }
@@ -1480,6 +1487,7 @@ window.confirmWd = async function(){
     console.log('Withdrawal saved. wrId=',wrRef.id,' txId=',txId);
     // Deduct coins ONLY after successful write
     S.coins-=coins;
+    pendingWd=null;
     save(); closeModal(); updateCoinUI(); updateWalletUI();
     document.getElementById('wd-coins').value='';
     document.getElementById('wd-acc').value='';
@@ -1494,6 +1502,7 @@ window.confirmWd = async function(){
       :(e.message||'Unknown error');
     showToast('❌ Failed to submit: '+msg,true);
   } finally {
+    _wdSubmitting = false;
     if(wdBtn){ wdBtn.disabled=false; wdBtn.textContent='Confirm'; }
   }
 };
@@ -1586,17 +1595,32 @@ match /leaderboard/{uid} {
 window.openAdminLogin=function(){
   if(!currentUser||currentUser.email!==ADMIN_EMAIL){ showToast('Access denied.',true); return; }
   document.getElementById('adminView').classList.add('open');
+  // Always show PIN screen first — never bypass
+  document.getElementById('aLoginWrap').style.display='flex';
+  document.getElementById('aDashWrap').style.display='none';
+  document.getElementById('al-pin').value='';
+  document.getElementById('al-err').textContent='';
+  isAdminAuth=false;
+};
+window.closeAdmin=function(){
+  document.getElementById('adminView').classList.remove('open');
+  if(pendingWrUnsubscribe){ pendingWrUnsubscribe(); pendingWrUnsubscribe=null; }
+};
+window.checkPin=function(){
+  const pin=document.getElementById('al-pin').value.trim();
+  const errEl=document.getElementById('al-err');
+  if(!pin){ errEl.textContent='Enter the admin PIN.'; return; }
+  // PIN stored as a simple hash check — default PIN is "admin1"
+  // To change the PIN, update the value below (use a 4-6 digit number)
+  const ADMIN_PIN='1234';
+  if(pin!==ADMIN_PIN){ errEl.textContent='❌ Incorrect PIN. Try again.'; document.getElementById('al-pin').value=''; return; }
+  errEl.textContent='';
   document.getElementById('aLoginWrap').style.display='none';
   const dash=document.getElementById('aDashWrap');
   dash.style.display='flex'; dash.style.flexDirection='column'; dash.style.flex='1';
   isAdminAuth=true;
   loadAdminDash();
 };
-window.closeAdmin=function(){
-  document.getElementById('adminView').classList.remove('open');
-  if(pendingWrUnsubscribe){ pendingWrUnsubscribe(); pendingWrUnsubscribe=null; }
-};
-window.checkPin=function(){};
 window.adminLogout=function(){
   isAdminAuth=false;
   if(pendingWrUnsubscribe){ pendingWrUnsubscribe(); pendingWrUnsubscribe=null; }
@@ -1763,8 +1787,12 @@ function renderProcessedList(processed){
   prel.innerHTML=processed.map(r=>`<div class="wr-card"><div class="wr-h"><div class="wr-user">👤 ${escHtml(r.name||r.username||'User')}</div><div class="wr-amt">₹${escHtml(String(r.rupees||0))}</div></div><div class="wr-det">📧 ${escHtml(r.email||'')}<br>📱 ${escHtml((r.method||'').toUpperCase())}: ${escHtml(r.acc||'')} · 📅 ${escHtml(r.date||'')}</div><div class="wr-done ${r.status==='approved'?'approved':'rejected'}">${r.status==='approved'?'✅ APPROVED & PAID':'❌ REJECTED'}</div></div>`).join('');
 }
 
+const _processingWrIds = new Set();
+
 window.processWr=async function(wrId,action){
   // ── Find card UI first ───────────────────────────────────────
+  if(_processingWrIds.has(wrId)){ return; } // already processing
+  _processingWrIds.add(wrId);
   let wrCard=null;
   document.querySelectorAll('[data-wrid]').forEach(el=>{ if(el.getAttribute('data-wrid')===wrId) wrCard=el; });
   const btn1=wrCard&&wrCard.querySelector('.btn-app');
@@ -1840,6 +1868,7 @@ window.processWr=async function(wrId,action){
     }
 
     // ── Step 5: Update card UI immediately ──────────────────────
+    _processingWrIds.delete(wrId);
     if(wrCard){
       const actsEl=wrCard.querySelector('.wr-acts');
       if(actsEl) actsEl.outerHTML=`<div class="wr-done ${action==='approved'?'approved':'rejected'}">${action==='approved'?'✅ APPROVED & PAID':'❌ REJECTED — Coins Refunded'}</div>`;
@@ -1859,6 +1888,7 @@ window.processWr=async function(wrId,action){
 
   } catch(e){
     console.error('processWr error',e);
+    _processingWrIds.delete(wrId);
     showToast('❌ Error: '+(e.message||'Unknown error. Check Firestore rules.'),true);
     if(btn1){ btn1.disabled=false; btn1.textContent='✅ APPROVE'; }
     if(btn2){ btn2.disabled=false; btn2.textContent='❌ REJECT'; }
