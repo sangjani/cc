@@ -1268,8 +1268,11 @@ async function endGame(){
   gameActive = false;
   animating = false;
   clearTimeout(hintTimeout);
-  const coinsEarned = totalCoinsThisGame + Math.floor(score/100);
-  S.coins += coinsEarned; S.totalCoins += coinsEarned;
+  // NOTE: S.coins and S.totalCoins already include coins earned during matches (via processMatches).
+  // totalCoinsThisGame is already reflected in S. Only add the end-of-game score bonus here.
+  const scoreBonusCoins = Math.floor(score/100);
+  S.coins += scoreBonusCoins; S.totalCoins += scoreBonusCoins;
+  const coinsEarned = totalCoinsThisGame + scoreBonusCoins;
   S.gamesPlayed++;
   if(score > S.bestScore) S.bestScore = score;
   save();
@@ -1288,8 +1291,11 @@ async function endGame(){
 function showLevelComplete(){
   gameActive = false;
   clearTimeout(hintTimeout);
-  const coinsEarned = totalCoinsThisGame + Math.floor(score/80);
-  S.coins += coinsEarned; S.totalCoins += coinsEarned;
+  // NOTE: S.coins/S.totalCoins already include coins earned during matches.
+  // Only add the end-of-level score bonus here.
+  const scoreBonusCoins = Math.floor(score/80);
+  S.coins += scoreBonusCoins; S.totalCoins += scoreBonusCoins;
+  const coinsEarned = totalCoinsThisGame + scoreBonusCoins;
   S.gamesPlayed++; S.totalLevelsCleared++;
   if(score > S.bestScore) S.bestScore = score;
   S.level = (S.level||1) + 1;
@@ -1446,9 +1452,9 @@ window.requestWithdrawal = function(){
   if(coins<20000){ showToast('Minimum 20,000 coins required!',true); return; }
   if(S.coins<coins){ showToast('Not enough coins!',true); return; }
   if(!acc||!name){ showToast('Fill all fields!',true); return; }
-  // Check if user already has a pending withdrawal request
-  const hasPending = S.transactions && S.transactions.some(tx => tx.status === 'pending');
-  if(hasPending){ showToast('⚠️ You already have a pending withdrawal. Wait for it to be processed.',true); return; }
+  // Block if a pending withdrawal already exists
+  const hasPending = S.transactions && S.transactions.some(tx => tx.status==='pending');
+  if(hasPending){ showToast('⚠️ You already have a pending withdrawal request. Wait for it to be processed.',true); return; }
   const rupees = (coins/200).toFixed(2);
   pendingWd={coins,method,acc,name,rupees};
   document.getElementById('m-title').textContent='Confirm Withdrawal';
@@ -1462,7 +1468,7 @@ let _wdSubmitting = false;
 
 window.confirmWd = async function(){
   if(!pendingWd||!currentUser){ closeModal(); return; }
-  if(_wdSubmitting){ return; } // prevent double-click / multi-tap
+  if(_wdSubmitting){ return; } // prevent double-tap
   _wdSubmitting = true;
   const {coins,method,acc,name,rupees}=pendingWd;
   const wdBtn=document.querySelector('.mb1');
@@ -1478,13 +1484,11 @@ window.confirmWd = async function(){
     const txRef=await addDoc(collection(db,'users',currentUser.uid,'transactions'),txData);
     const txId=txRef.id;
     // Step 2: Save to global withdrawalRequests — this is what admin reads
-    const wrRef=await addDoc(collection(db,'withdrawalRequests'),{
+    await addDoc(collection(db,'withdrawalRequests'),{
       ...txData,
       userDocId:currentUser.uid,
-      txId:txId,
-      id:undefined  // Firestore will auto-set, clear placeholder
+      txId:txId
     });
-    console.log('Withdrawal saved. wrId=',wrRef.id,' txId=',txId);
     // Deduct coins ONLY after successful write
     S.coins-=coins;
     pendingWd=null;
@@ -1514,10 +1518,14 @@ function renderTx(){
   el.innerHTML=S.transactions.map(tx=>`<div class="tx-item"><div class="tx-ico">💸</div><div style="flex:1;"><div class="tx-nm">${(tx.method||'').toUpperCase()} · ${tx.acc||''}</div><div class="tx-dt">${tx.date}</div></div><div style="text-align:right;"><div class="tx-amt">-₹${tx.rupees}</div><div class="tx-st ${tx.status}">${(tx.status||'pending').toUpperCase()}</div></div></div>`).join('');
 }
 
+let _txUnsubscribe = null;
+
 function listenToUserTransactions(){
   if(!currentUser) return;
+  // Unsubscribe previous listener to avoid stacking multiple listeners on wallet re-open
+  if(_txUnsubscribe){ _txUnsubscribe(); _txUnsubscribe=null; }
   const txRef=collection(db,'users',currentUser.uid,'transactions');
-  onSnapshot(txRef,(snap)=>{ S.transactions=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.timestamp-a.timestamp); renderTx(); });
+  _txUnsubscribe=onSnapshot(txRef,(snap)=>{ S.transactions=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.timestamp||0)-(a.timestamp||0)); renderTx(); updateWalletUI(); });
 }
 
 // ============================================================
@@ -1595,7 +1603,7 @@ match /leaderboard/{uid} {
 window.openAdminLogin=function(){
   if(!currentUser||currentUser.email!==ADMIN_EMAIL){ showToast('Access denied.',true); return; }
   document.getElementById('adminView').classList.add('open');
-  // Always show PIN screen first — never bypass
+  // Always show PIN screen — never skip it
   document.getElementById('aLoginWrap').style.display='flex';
   document.getElementById('aDashWrap').style.display='none';
   document.getElementById('al-pin').value='';
@@ -1610,9 +1618,7 @@ window.checkPin=function(){
   const pin=document.getElementById('al-pin').value.trim();
   const errEl=document.getElementById('al-err');
   if(!pin){ errEl.textContent='Enter the admin PIN.'; return; }
-  // PIN stored as a simple hash check — default PIN is "admin1"
-  // To change the PIN, update the value below (use a 4-6 digit number)
-  const ADMIN_PIN='1234';
+  const ADMIN_PIN='1234'; // change this to your desired PIN
   if(pin!==ADMIN_PIN){ errEl.textContent='❌ Incorrect PIN. Try again.'; document.getElementById('al-pin').value=''; return; }
   errEl.textContent='';
   document.getElementById('aLoginWrap').style.display='none';
@@ -1623,10 +1629,11 @@ window.checkPin=function(){
 };
 window.adminLogout=function(){
   isAdminAuth=false;
+  _locallyProcessed.clear();
   if(pendingWrUnsubscribe){ pendingWrUnsubscribe(); pendingWrUnsubscribe=null; }
   closeAdmin();
 };
-window.adminRefresh=function(){ if(isAdminAuth) loadAdminDash(); };
+window.adminRefresh=function(){ if(isAdminAuth){ _locallyProcessed.clear(); loadAdminDash(); } };
 
 // ── Load users (independent, never blocks withdrawals) ────────
 async function loadAdminUsers(){
@@ -1731,11 +1738,16 @@ function setupPendingListener(){
   if(pendingWrUnsubscribe) pendingWrUnsubscribe();
   const q=query(collection(db,'withdrawalRequests'),where('status','==','pending'));
   pendingWrUnsubscribe=onSnapshot(q,(snap)=>{
+    const freshPendingIds=new Set(snap.docs.map(d=>d.id));
+    // Any ID we locally marked as processed that Firestore now confirms is NOT pending → safe to clean up
+    _locallyProcessed.forEach(id=>{ if(!freshPendingIds.has(id)) _locallyProcessed.delete(id); });
+    // Rebuild pendingWrData from snapshot
     const freshIds=new Set();
     snap.docs.forEach(d=>{ pendingWrData[d.id]={id:d.id,...d.data()}; freshIds.add(d.id); });
     Object.keys(pendingWrData).forEach(k=>{ if(!freshIds.has(k)) delete pendingWrData[k]; });
     const pending=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
-    const pendCountEl=document.getElementById('ad-pending'); if(pendCountEl) pendCountEl.textContent=pending.length;
+    const pendCountEl=document.getElementById('ad-pending');
+    if(pendCountEl) pendCountEl.textContent=pending.filter(r=>!_locallyProcessed.has(r.id)).length;
     renderPendingList(pending);
   },(err)=>{
     console.warn('pending listener error:',err.code||err.message);
@@ -1766,9 +1778,20 @@ window.filterAdminUsers=function(q){
 
 function renderPendingList(pending){
   const pel=document.getElementById('ad-pendingList'); if(!pel) return;
-  if(!pending.length){ pel.innerHTML='<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:13px;">No pending requests 🎉</div>'; return; }
-  pel.innerHTML='';
-  pending.forEach(function(r){
+  // Filter out any IDs that have already been processed in this session
+  const filtered=pending.filter(r=>!_locallyProcessed.has(r.id));
+  if(!filtered.length){ pel.innerHTML='<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:13px;">No pending requests 🎉</div>'; return; }
+  // Only rebuild cards that don't already exist in the DOM (prevent flash/re-render)
+  const existing=new Set();
+  pel.querySelectorAll('[data-wrid]').forEach(el=>existing.add(el.getAttribute('data-wrid')));
+  // Remove cards that are no longer in the list
+  pel.querySelectorAll('[data-wrid]').forEach(el=>{
+    const id=el.getAttribute('data-wrid');
+    if(!filtered.find(r=>r.id===id)) el.remove();
+  });
+  // Add new cards that aren't in the DOM yet
+  filtered.forEach(function(r){
+    if(existing.has(r.id)) return; // already rendered
     const card=document.createElement('div');
     card.className='wr-card';
     card.dataset.wrid=r.id;
@@ -1787,12 +1810,17 @@ function renderProcessedList(processed){
   prel.innerHTML=processed.map(r=>`<div class="wr-card"><div class="wr-h"><div class="wr-user">👤 ${escHtml(r.name||r.username||'User')}</div><div class="wr-amt">₹${escHtml(String(r.rupees||0))}</div></div><div class="wr-det">📧 ${escHtml(r.email||'')}<br>📱 ${escHtml((r.method||'').toUpperCase())}: ${escHtml(r.acc||'')} · 📅 ${escHtml(r.date||'')}</div><div class="wr-done ${r.status==='approved'?'approved':'rejected'}">${r.status==='approved'?'✅ APPROVED & PAID':'❌ REJECTED'}</div></div>`).join('');
 }
 
+// Tracks IDs that have been processed locally so the snapshot doesn't re-render them
+const _locallyProcessed = new Set();
 const _processingWrIds = new Set();
 
 window.processWr=async function(wrId,action){
-  // ── Find card UI first ───────────────────────────────────────
-  if(_processingWrIds.has(wrId)){ return; } // already processing
+  // ── Guard: prevent double-click ─────────────────────────────
+  if(_processingWrIds.has(wrId)){ return; }
+  if(_locallyProcessed.has(wrId)){ return; }
   _processingWrIds.add(wrId);
+
+  // ── Find card and disable buttons immediately ────────────────
   let wrCard=null;
   document.querySelectorAll('[data-wrid]').forEach(el=>{ if(el.getAttribute('data-wrid')===wrId) wrCard=el; });
   const btn1=wrCard&&wrCard.querySelector('.btn-app');
@@ -1801,81 +1829,97 @@ window.processWr=async function(wrId,action){
   if(btn2){ btn2.disabled=true; btn2.textContent='⏳'; }
 
   try {
-    // ── Step 1: Always fetch fresh data directly from Firestore ──
+    // ── Step 1: Fetch fresh withdrawal doc from Firestore ────────
     const wrDocRef=doc(db,'withdrawalRequests',wrId);
     const wrSnap=await getDoc(wrDocRef);
-    if(!wrSnap.exists()){ showToast('❌ Request not found in database. ID: '+wrId.substring(0,8)+'... — Try Refresh.',true); console.error('Doc missing, wrId=',wrId); if(btn1){btn1.disabled=false;btn1.textContent='✅ APPROVE';} if(btn2){btn2.disabled=false;btn2.textContent='❌ REJECT';} return; }
+    if(!wrSnap.exists()){
+      _processingWrIds.delete(wrId);
+      showToast('❌ Request not found. Tap 🔄 Refresh.',true);
+      if(btn1){btn1.disabled=false;btn1.textContent='✅ APPROVE';}
+      if(btn2){btn2.disabled=false;btn2.textContent='❌ REJECT';}
+      return;
+    }
     const r={id:wrId,...wrSnap.data()};
 
-    // Guard: already processed
+    // Guard: already processed (race condition check)
     if(r.status!=='pending'){
-      showToast('⚠️ Already '+(r.status||'processed')+'.',true);
-      if(wrCard){ const actsEl=wrCard.querySelector('.wr-acts'); if(actsEl) actsEl.outerHTML=`<div class="wr-done ${r.status==='approved'?'approved':'rejected'}">${r.status==='approved'?'✅ APPROVED & PAID':'❌ REJECTED'}</div>`; }
+      _processingWrIds.delete(wrId);
+      _locallyProcessed.add(wrId);
+      showToast('⚠️ Already '+(r.status==='approved'?'approved':'rejected')+'.',true);
+      if(wrCard){
+        const actsEl=wrCard.querySelector('.wr-acts');
+        if(actsEl) actsEl.outerHTML=`<div class="wr-done ${r.status==='approved'?'approved':'rejected'}">${r.status==='approved'?'✅ APPROVED & PAID':'❌ REJECTED'}</div>`;
+      }
       return;
     }
 
-    const userDocId=r.userDocId||r.uid||'';
-    const txId=r.txId||'';
-    const coinsAmt=parseInt(r.coins)||0;
-    const rupeesAmt=parseFloat(r.rupees)||0;
+    const userDocId = r.userDocId || r.uid || '';
+    const txId      = r.txId || '';
+    const coinsAmt  = parseInt(r.coins) || 0;
+    const rupeesAmt = parseFloat(r.rupees) || 0;
 
-    // ── Step 2: Read user doc for current balances ───────────────
+    // ── Step 2: Read current user balances from Firestore ────────
     let userCoins=0, userWithdrawn=0;
     if(userDocId){
-      const uSnap=await getDoc(doc(db,'users',userDocId));
-      if(uSnap.exists()){
-        userCoins=parseInt(uSnap.data().coins)||0;
-        userWithdrawn=parseFloat(uSnap.data().totalWithdrawn)||0;
-      }
+      try{
+        const uSnap=await getDoc(doc(db,'users',userDocId));
+        if(uSnap.exists()){
+          userCoins    = parseInt(uSnap.data().coins)          || 0;
+          userWithdrawn= parseFloat(uSnap.data().totalWithdrawn)|| 0;
+        }
+      } catch(ue){ console.warn('Could not read user doc:',ue); }
     }
 
-    // ── Step 3: Build and commit batch ──────────────────────────
+    // ── Step 3: Commit all writes in a single batch ──────────────
     const batch=writeBatch(db);
 
-    // Always update the withdrawal request status
-    batch.update(wrDocRef,{status:action,processedAt:serverTimestamp()});
+    // 3a. Mark the withdrawal request as processed
+    batch.update(wrDocRef, { status:action, processedAt:serverTimestamp() });
 
-    // Update transaction record if it exists
-    if(userDocId&&txId){
-      try{ batch.update(doc(db,'users',userDocId,'transactions',txId),{status:action}); }catch(e){ console.warn('tx path warn',e); }
+    // 3b. Mirror status into the user's transactions subcollection
+    if(userDocId && txId){
+      batch.update(doc(db,'users',userDocId,'transactions',txId), { status:action });
     }
 
-    // On REJECT: refund coins back to user
-    if(action==='rejected'&&coinsAmt>0&&userDocId){
-      batch.update(doc(db,'users',userDocId),{
-        coins: userCoins+coinsAmt,
+    // 3c. On REJECT → refund coins to user
+    if(action==='rejected' && coinsAmt>0 && userDocId){
+      batch.update(doc(db,'users',userDocId), {
+        coins: userCoins + coinsAmt,
         updatedAt: serverTimestamp()
       });
     }
 
-    // On APPROVE: update totalWithdrawn
-    if(action==='approved'&&rupeesAmt>0&&userDocId){
-      batch.update(doc(db,'users',userDocId),{
-        totalWithdrawn: userWithdrawn+rupeesAmt,
+    // 3d. On APPROVE → increment totalWithdrawn on user
+    if(action==='approved' && rupeesAmt>0 && userDocId){
+      batch.update(doc(db,'users',userDocId), {
+        totalWithdrawn: userWithdrawn + rupeesAmt,
         updatedAt: serverTimestamp()
       });
     }
 
     await batch.commit();
 
-    // ── Step 4: Update local cache if this is the current user ──
+    // ── Step 4: Mark locally processed BEFORE snapshot fires ────
+    _locallyProcessed.add(wrId);
+    _processingWrIds.delete(wrId);
     delete pendingWrData[wrId];
-    if(action==='rejected'&&userDocId&&userDocId===currentUser?.uid){
-      S.coins=userCoins+coinsAmt; save(); updateCoinUI();
+
+    // ── Step 5: Update this user's local state if it's the admin ─
+    if(action==='rejected' && userDocId && userDocId===currentUser?.uid){
+      S.coins = userCoins + coinsAmt; save(); updateCoinUI();
     }
-    if(action==='approved'&&userDocId&&userDocId===currentUser?.uid){
-      S.totalWithdrawn=(S.totalWithdrawn||0)+rupeesAmt; save();
+    if(action==='approved' && userDocId && userDocId===currentUser?.uid){
+      S.totalWithdrawn = (S.totalWithdrawn||0) + rupeesAmt; save();
     }
 
-    // ── Step 5: Update card UI immediately ──────────────────────
-    _processingWrIds.delete(wrId);
+    // ── Step 6: Replace card buttons with status badge immediately
     if(wrCard){
       const actsEl=wrCard.querySelector('.wr-acts');
       if(actsEl) actsEl.outerHTML=`<div class="wr-done ${action==='approved'?'approved':'rejected'}">${action==='approved'?'✅ APPROVED & PAID':'❌ REJECTED — Coins Refunded'}</div>`;
     }
-    showToast(action==='approved'?'✅ Payment approved!':'🔄 Rejected — coins refunded', false);
+    showToast(action==='approved'?'✅ Payment approved & saved!':'🔄 Rejected — coins refunded to user', false);
 
-    // ── Step 6: Refresh stats & processed list ──────────────────
+    // ── Step 7: Refresh processed list & stat counters ───────────
     try {
       const allSnap=await getDocs(collection(db,'withdrawalRequests'));
       const all=allSnap.docs.map(d=>({id:d.id,...d.data()}));
@@ -1883,13 +1927,16 @@ window.processWr=async function(wrId,action){
       const paid=all.filter(x=>x.status==='approved').reduce((s,x)=>s+parseFloat(x.rupees||0),0);
       const pendingCount=all.filter(x=>x.status==='pending').length;
       const pendEl=document.getElementById('ad-pending'); if(pendEl) pendEl.textContent=pendingCount;
-      const paidEl=document.getElementById('ad-paid'); if(paidEl) paidEl.textContent='₹'+paid.toFixed(2);
+      const paidEl=document.getElementById('ad-paid');   if(paidEl) paidEl.textContent='₹'+paid.toFixed(2);
     } catch(e2){ console.warn('stats refresh error',e2); }
 
   } catch(e){
     console.error('processWr error',e);
     _processingWrIds.delete(wrId);
-    showToast('❌ Error: '+(e.message||'Unknown error. Check Firestore rules.'),true);
+    const errMsg = e.code==='permission-denied'
+      ? '❌ Permission denied — check Firestore rules.'
+      : '❌ Error: '+(e.message||'Unknown. Check Firestore rules.');
+    showToast(errMsg, true);
     if(btn1){ btn1.disabled=false; btn1.textContent='✅ APPROVE'; }
     if(btn2){ btn2.disabled=false; btn2.textContent='❌ REJECT'; }
   }
@@ -1906,7 +1953,7 @@ window.adminGiveCoins=async function(){
   try {
     const ref=doc(db,'users',targetUid);
     const snap=await getDoc(ref);
-    if(!snap.exists()){ showToast('User not found in database!',true); return; }
+    if(!snap.exists()){ showToast('User not found in database!',true); return; } // finally will re-enable button
     const uData=snap.data();
     const newCoins=(uData.coins||0)+amt;
     const newTotal=(uData.totalCoins||0)+amt;
@@ -1920,7 +1967,6 @@ window.adminGiveCoins=async function(){
     if(selEl) selEl.value='';
     const targetName=uData.username||uData.email||'user';
     showToast(`✅ Added ${amt.toLocaleString()} coins to ${targetName}!`,false);
-    // Refresh just the user list display and dropdown
     populateUsersUI();
   } catch(e){
     console.error('adminGiveCoins error:',e);
